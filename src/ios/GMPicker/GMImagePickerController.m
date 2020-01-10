@@ -298,18 +298,19 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     // Do something e.g. Alert a user for transfer completion.
                     // On failed uploads, `error` contains the error object.
-                    NSLog(@"Finished: Error = %@", error);
+                    
                     if (error != nil) {
+                        NSLog(@"Finished: Error = %@", error);
                         [self.uploadResult setObject:error forKey:@"Error"];
                         [self.progressController dismissViewControllerAnimated:YES completion:nil];
                     } else {
+                        NSLog(@"Finished: Response = %@", task.response);
                         NSURL *uploadURL = [task.response URL];
                         NSString *uploadPath = [[uploadURL.absoluteString componentsSeparatedByString:@"?"] objectAtIndex:0];
                         [self.uploadResult setObject:uploadPath forKey:@"Location"];
                         [self.progressController dismissViewControllerAnimated:YES completion:nil];
                         [self finishPickingAssets:self];
                     }
-                    NSLog(@"Finished: Response = %@", task.response);
                 });
             };
 
