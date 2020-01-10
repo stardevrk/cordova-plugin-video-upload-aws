@@ -6,12 +6,10 @@ exports.coolMethod = function (arg0, success, error) {
 
 function parseOptions(args) {
     var a = [];
-    a.push(args.key || null);
-    a.push(args.secret || null);
+    a.push(args.poolID || null);
     a.push(args.region || null);
-    a.push(args.container || null);
-    a.push(args.path || null);
-    a.push(args.access || null);
+    a.push(args.bucket || null);
+    a.push(args.folder || null);
     return a;
 }    
     
