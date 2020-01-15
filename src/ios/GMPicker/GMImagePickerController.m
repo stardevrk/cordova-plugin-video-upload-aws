@@ -347,6 +347,8 @@
 
 - (void)selectAsset:(PHAsset *)asset
 {
+    //Format selected Assests
+    self.selectedAssets = [[NSMutableArray alloc] init];
     [self.selectedAssets insertObject:asset atIndex:self.selectedAssets.count];
     [self updateDoneButton];
     
