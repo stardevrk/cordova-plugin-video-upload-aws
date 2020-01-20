@@ -23,7 +23,10 @@
     _picker.colsInPortrait = 3;
     _picker.colsInLandscape = 5;
     _picker.minimumInteritemSpacing = 2.0;
-    _picker.modalPresentationStyle = UIModalPresentationPopover;
+    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone )
+    {
+       _picker.modalPresentationStyle = UIModalPresentationPopover;
+    }
      self.actionCallbackId = command.callbackId;
      [self.commandDelegate runInBackground:^{
          CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -36,7 +39,12 @@
            
     [self.commandDelegate runInBackground:^{
         dispatch_async(dispatch_get_main_queue(), ^{
-          [self.viewController presentViewController:self.picker animated:YES completion:nil];
+          if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+            {
+               [self.viewController showViewController:self.picker sender:nil];
+            } else {
+               [self.viewController presentViewController:self.picker animated:YES completion:nil];
+            };
         });
         return;
     }];

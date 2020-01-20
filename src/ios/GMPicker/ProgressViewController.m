@@ -53,7 +53,15 @@
         [[_progressView layer]setMasksToBounds:TRUE];
         _progressView.clipsToBounds = YES;
         
-        _progressLabel = [[UILabel alloc] initWithFrame:CGRectMake((realWidth-200)/2, realHeight/2-150, 200, 40.0)];
+        // _progressLabel = [[UILabel alloc] initWithFrame:CGRectMake((realWidth-200)/2, realHeight/2-150, 200, 40.0)];
+        _progressLabel = [[UILabel alloc] init];
+        CGRect aFrame = _progressLabel.frame;
+        aFrame.size.width = 200;
+        aFrame.size.height = 40;
+        aFrame.origin.x = self.view.frame.origin.x;
+        aFrame.origin.y = self.view.frame.origin.y;
+        _progressLabel.frame = aFrame;
+
         _progressLabel.font = [UIFont boldSystemFontOfSize:24.0];
         _progressLabel.text = @"0%";
         _progressLabel.backgroundColor = [UIColor clearColor];
@@ -199,6 +207,12 @@
     _IsAnimationInProgress = NO;
     if (_new_to_value>_current_value)
         [self setProgress:[NSNumber numberWithFloat:_new_to_value]];
+}
+
+- (void)viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    NSLog(@"bounds = %@", NSStringFromCGRect(self.view.bounds));
+    self.progressLabel.center = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
 }
 
 /*
