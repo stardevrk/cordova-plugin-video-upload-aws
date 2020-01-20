@@ -159,6 +159,7 @@
     CGRect frame;
     float realWidth;
     float realHeight;
+    CGSize frameSize;
 //        NSLog(@"Screen Size %f", [[UIScreen mainScreen] bounds].size.width);
     if ([[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeLeft || [[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeRight) {
         realWidth = [[UIScreen mainScreen] bounds].size.width < kPopoverContentSize.height ? [[UIScreen mainScreen] bounds].size.width : kPopoverContentSize.height;
@@ -172,7 +173,8 @@
         
     }
     
-    circle.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(realWidth/2,realHeight/2)
+    frameSize = self.view.frame.size;
+    circle.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(frameSize.width/2,frameSize.height/2)
                                                  radius:radius startAngle:start_angle endAngle:end_angle clockwise:YES].CGPath;
     
     // Configure the apperence of the circle
