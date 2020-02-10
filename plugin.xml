@@ -31,11 +31,21 @@
         <source-file src="src/ios/GMPicker/GMImagePickerController.m" />
         <header-file src="src/ios/GMPicker/ProgressViewController.h" />
         <source-file src="src/ios/GMPicker/ProgressViewController.m" />
+        <header-file src="src/ios/GMPicker/RecordingView.h" />
+        <source-file src="src/ios/GMPicker/RecordingView.m" />
+        <header-file src="src/ios/GMPicker/RecordingUploader.h" />
+        <source-file src="src/ios/GMPicker/RecordingUploader.m" />
         <resource-file src="src/ios/GMPicker/GMEmptyFolder@1x.png" />
         <resource-file src="src/ios/GMPicker/GMEmptyFolder@2x.png" />
         <resource-file src="src/ios/GMPicker/GMSelected.png" />
         <resource-file src="src/ios/GMPicker/GMSelected@2x.png" />
         <resource-file src="src/ios/GMPicker/GMVideoIcon.png" />
         <resource-file src="src/ios/GMPicker/GMVideoIcon@2x.png" />
+        <resource-file src="src/ios/GMPicker/CloseIcon.png" />
+        <resource-file src="src/ios/GMPicker/CloseIcon@2x.png" />
+        <resource-file src="src/ios/GMPicker/StopIcon.png" />
+        <resource-file src="src/ios/GMPicker/StopIcon@2x.png" />
+        <resource-file src="src/ios/GMPicker/RecIcon.png" />
+        <resource-file src="src/ios/GMPicker/RecIcon@2x.png" />
     </platform>
 </plugin>
