@@ -47,5 +47,7 @@
         <resource-file src="src/ios/GMPicker/StopIcon@2x.png" />
         <resource-file src="src/ios/GMPicker/RecIcon.png" />
         <resource-file src="src/ios/GMPicker/RecIcon@2x.png" />
+        <resource-file src="src/ios/GMPicker/SwitchIcon.png" />
+        <resource-file src="src/ios/GMPicker/SwitchIcon@2x.png" />
     </platform>
 </plugin>
