@@ -98,7 +98,7 @@
         //ADD MOVIE FILE OUTPUT
         NSLog(@"Adding movie file output");
         _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-        Float64 TotalSeconds = 60;        //Total seconds
+        Float64 TotalSeconds = 1800;        //Total seconds
         int32_t preferredTimeScale = 30;    //Frames per second
         CMTime maxDuration = CMTimeMakeWithSeconds(TotalSeconds, preferredTimeScale);    //<<SET MAX DURATION
         _movieFileOutput.maxRecordedDuration = maxDuration;
