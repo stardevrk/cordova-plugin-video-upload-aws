@@ -34,7 +34,7 @@
     
     CGRect closeBtnRect = CGRectMake(120, 10, 40, 40);
     _closeBtn = [[UIButton alloc] init];
-    _closeBtn = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _closeBtn = [UIButton buttonWithType:UIButtonTypeCustom]
     _closeBtn.frame = closeBtnRect;
     [_closeBtn setBackgroundImage:[UIImage imageNamed:@"SwitchIcon"] forState:UIControlStateNormal];
     _closeBtn.hidden = true;
@@ -42,7 +42,7 @@
     
     CGRect removeBtnRect = CGRectMake(10, 10, 40, 40);
     _removeBtn = [[UIButton alloc] init];
-    _removeBtn = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _removeBtn = [UIButton buttonWithType:UIButtonTypeCustom]
     _removeBtn.frame = removeBtnRect;
     [_removeBtn setBackgroundImage:[UIImage imageNamed:@"CloseIcon"] forState:UIControlStateNormal];
     _removeBtn.hidden = true;
@@ -50,7 +50,7 @@
     
     CGRect controlBtnRect = CGRectMake(80, 160, 40, 40);
     _controlBtn = [[UIButton alloc] init];
-    _controlBtn = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _controlBtn = [UIButton buttonWithType:UIButtonTypeCustom]
     _controlBtn.frame = controlBtnRect;
     [_controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
     _controlBtn.hidden = true;
@@ -429,7 +429,7 @@ didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
     NSLog(@"didFinishRecordingToOutputFileAtURL - %@", error);
     //Format Recording State
     self.recording = false;
-    [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"]
+    [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
     self.timerShow.hidden = true;
     self.timer = [[NSTimer alloc] init];
 

@@ -16,15 +16,20 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ProgressViewController : UIViewController
 
 @property (nonatomic, strong) UIProgressView *progressView;
+@property (nonatomic, strong) UIView *parentView;
+@property float parentWidth;
+@property float parentHeight;
 
 @property id delegate;
 @property float current_value;
 @property float new_to_value;
 
 @property BOOL IsAnimationInProgress;
+@property CAShapeLayer *circle;
 
 @property (nonatomic, strong) UILabel *progressLabel;
 - (void)setProgress:(NSNumber*)value;
+- (void)formatCurrentValue:(float)current_value;
 @end
 
 @protocol ProgressViewControllerDelegate <NSObject>

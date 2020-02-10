@@ -27,23 +27,26 @@
         float realWidth;
         float realHeight;
 //        NSLog(@"Screen Size %f", [[UIScreen mainScreen] bounds].size.width);
-        if ([[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeLeft || [[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeRight) {
-            realWidth = [[UIScreen mainScreen] bounds].size.width < kPopoverContentSize.height ? [[UIScreen mainScreen] bounds].size.width : kPopoverContentSize.height;
-            realHeight = [[UIScreen mainScreen] bounds].size.height < kPopoverContentSize.width ? [[UIScreen mainScreen] bounds].size.height : kPopoverContentSize.width;
-            frame = CGRectMake((realWidth/2 - 100), (realHeight/2 - 100), 200, 200);
-        }
-        else {
-            realWidth = [[UIScreen mainScreen] bounds].size.width < kPopoverContentSize.width ? [[UIScreen mainScreen] bounds].size.width : kPopoverContentSize.width;
-            realHeight = [[UIScreen mainScreen] bounds].size.height < kPopoverContentSize.height ? [[UIScreen mainScreen] bounds].size.height : kPopoverContentSize.height;
-            frame = CGRectMake((realWidth/2 - 100), (realHeight/2 - 100), 200, 200);
-            
-        }
+//        if ([[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeLeft || [[UIApplication sharedApplication] statusBarOrientation] == UIDeviceOrientationLandscapeRight) {
+//            realWidth = [[UIScreen mainScreen] bounds].size.width < kPopoverContentSize.height ? [[UIScreen mainScreen] bounds].size.width : kPopoverContentSize.height;
+//            realHeight = [[UIScreen mainScreen] bounds].size.height < kPopoverContentSize.width ? [[UIScreen mainScreen] bounds].size.height : kPopoverContentSize.width;
+//            frame = CGRectMake((realWidth/2 - 100), (realHeight/2 - 100), 200, 200);
+//        }
+//        else {
+//            realWidth = [[UIScreen mainScreen] bounds].size.width < kPopoverContentSize.width ? [[UIScreen mainScreen] bounds].size.width : kPopoverContentSize.width;
+//            realHeight = [[UIScreen mainScreen] bounds].size.height < kPopoverContentSize.height ? [[UIScreen mainScreen] bounds].size.height : kPopoverContentSize.height;
+//            frame = CGRectMake((realWidth/2 - 100), (realHeight/2 - 100), 200, 200);
+//
+//        }
+        
+        frame = CGRectMake((self.parentView.frame.size.width/2 - 100), (self.parentView.frame.size.height/2 - 100), 200, 200);
             
 //        UIProgressView *progressView;
         _progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
         _progressView.progressTintColor = [UIColor colorWithRed:187.0/255 green:160.0/255 blue:209.0/255 alpha:1.0];
         
         [[_progressView layer]setFrame:frame];
+        [[_progressView layer]setBackgroundColor:[UIColor greenColor].CGColor];
         [[_progressView layer]setBorderColor:[UIColor redColor].CGColor];
         _progressView.trackTintColor = [UIColor clearColor];
         [_progressView setProgress:(float)(50/100) animated:YES];  ///15
@@ -53,7 +56,10 @@
         [[_progressView layer]setMasksToBounds:TRUE];
         _progressView.clipsToBounds = YES;
         
-        // _progressLabel = [[UILabel alloc] initWithFrame:CGRectMake((realWidth-200)/2, realHeight/2-150, 200, 40.0)];
+//        CGPoint superCenter = CGPointMake(CGRectGetMidX([self.view bounds]), CGRectGetMidY([self.view bounds]));
+        
+        
+//        _progressLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.view.frame.size.width/2, self.view.frame.size.height/2, 200, 40.0)];
         _progressLabel = [[UILabel alloc] init];
         CGRect aFrame = _progressLabel.frame;
         aFrame.size.width = 200;
@@ -61,7 +67,9 @@
         aFrame.origin.x = self.view.frame.origin.x;
         aFrame.origin.y = self.view.frame.origin.y;
         _progressLabel.frame = aFrame;
-
+        
+//        _progressLabel.center = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
+//        [_progressLabel setCenter:superCenter];
         _progressLabel.font = [UIFont boldSystemFontOfSize:24.0];
         _progressLabel.text = @"0%";
         _progressLabel.backgroundColor = [UIColor clearColor];
@@ -75,7 +83,9 @@
         
         
 //        [self.view addSubview:_progressView];
+        
         [self.view addSubview:_progressLabel];
+//        [self.view.layer add]
     }
     
     return self;
@@ -121,6 +131,12 @@
     [self performSelector:@selector(UpdateLabelsWithValue:) withObject:[NSString stringWithFormat:@"%.0f%%", to_value*100] afterDelay:animation_time];
 }
 
+- (void)formatCurrentValue:(float)current_value
+{
+    self.current_value = current_value;
+    [self.circle removeFromSuperlayer];
+}
+
 - (void)setProgress:(NSNumber*)value{
     
     float to_value = [value floatValue];
@@ -152,7 +168,8 @@
     
     float radius = 75.0;
     
-    CAShapeLayer *circle = [CAShapeLayer layer];
+    self.circle = [CAShapeLayer layer];
+    CAShapeLayer *backgroundCircle = [CAShapeLayer layer];
 
     // Make a circular shape
     
@@ -174,16 +191,22 @@
     }
     
     frameSize = self.view.frame.size;
-    circle.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(frameSize.width/2,frameSize.height/2)
+    self.circle.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(frameSize.width/2,frameSize.height/2)
                                                  radius:radius startAngle:start_angle endAngle:end_angle clockwise:YES].CGPath;
-    
+//    backgroundCircle.path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(frameSize.width/2,frameSize.height/2)
+//    radius:radius startAngle:(0-M_PI_2) endAngle:(2*M_PI-M_PI_2) clockwise:YES].CGPath;
+//    backgroundCircle.fillColor = [UIColor clearColor].CGColor;
+//    backgroundCircle.strokeColor = [UIColor grayColor].CGColor;
+//    backgroundCircle.lineWidth = 8;
     // Configure the apperence of the circle
-    circle.fillColor = [UIColor clearColor].CGColor;
-    circle.strokeColor = [UIColor blueColor].CGColor;
-    circle.lineWidth = 8;
+    self.circle.fillColor = [UIColor clearColor].CGColor;
+    self.circle.strokeColor = [UIColor blueColor].CGColor;
+    self.circle.lineWidth = 8;
     
     // Add to parent layer
-    [self.view.layer addSublayer:circle];
+//    [self.view.layer addSublayer:backgroundCircle];
+    [self.view.layer addSublayer:self.circle];
+    
     
     // Configure animation
     CABasicAnimation *drawAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
@@ -200,7 +223,7 @@
     drawAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
     
     // Add the animation to the circle
-    [circle addAnimation:drawAnimation forKey:@"drawCircleAnimation"];
+    [self.circle addAnimation:drawAnimation forKey:@"drawCircleAnimation"];
     self.current_value = to_value;
 }
 
