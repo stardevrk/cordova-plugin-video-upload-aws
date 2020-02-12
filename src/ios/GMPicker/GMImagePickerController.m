@@ -308,6 +308,7 @@
                         NSURL *uploadURL = [task.response URL];
                         NSString *uploadPath = [[uploadURL.absoluteString componentsSeparatedByString:@"?"] objectAtIndex:0];
                         [self.uploadResult setObject:uploadPath forKey:@"Location"];
+                        [self.uploadResult setObject:[[NSNumber alloc] initWithInt:1] forKey:@"Recording"];
                         [self.progressController dismissViewControllerAnimated:YES completion:nil];
                         [self finishPickingAssets:self];
                     }

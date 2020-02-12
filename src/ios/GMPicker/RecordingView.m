@@ -34,7 +34,7 @@
     
     CGRect closeBtnRect = CGRectMake(120, 10, 40, 40);
     _closeBtn = [[UIButton alloc] init];
-    _closeBtn = [UIButton buttonWithType:UIButtonTypeCustom]
+    _closeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     _closeBtn.frame = closeBtnRect;
     [_closeBtn setBackgroundImage:[UIImage imageNamed:@"SwitchIcon"] forState:UIControlStateNormal];
     _closeBtn.hidden = true;
@@ -42,7 +42,7 @@
     
     CGRect removeBtnRect = CGRectMake(10, 10, 40, 40);
     _removeBtn = [[UIButton alloc] init];
-    _removeBtn = [UIButton buttonWithType:UIButtonTypeCustom]
+    _removeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     _removeBtn.frame = removeBtnRect;
     [_removeBtn setBackgroundImage:[UIImage imageNamed:@"CloseIcon"] forState:UIControlStateNormal];
     _removeBtn.hidden = true;
@@ -50,7 +50,7 @@
     
     CGRect controlBtnRect = CGRectMake(80, 160, 40, 40);
     _controlBtn = [[UIButton alloc] init];
-    _controlBtn = [UIButton buttonWithType:UIButtonTypeCustom]
+    _controlBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     _controlBtn.frame = controlBtnRect;
     [_controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
     _controlBtn.hidden = true;
@@ -61,101 +61,195 @@
     _timerShow.text = @"00:00";
     _timerShow.hidden = true;
     _timerShow.textColor = [UIColor whiteColor];
+    _timerShow.backgroundColor = [UIColor redColor];
+    _timerShow.layer.cornerRadius = 5;
+    _timerShow.layer.masksToBounds = true;
     _timerShow.textAlignment = NSTextAlignmentCenter;
     
-    
+    self.layer.cornerRadius = 10;
+    self.layer.masksToBounds = true;
+    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(changeOrientation)    name:UIDeviceOrientationDidChangeNotification  object:nil];
 //    CGRect stopBtnRect = CGRectMake(80, 160, 20, 20);
 //    _stopBtn = [[UIButton alloc] initWithFrame:stopBtnRect];
 //    _controlBtn.backgroundColor = [UIColor redColor];
 //    _stopBtn.hidden = true;
 //    [_controlBtn addTarget:self action:@selector(stopRecording) forControlEvents:UIControlEventTouchUpInside];
     
+//        _captureSession = [AVCaptureSession new];
+//        _captureSession.sessionPreset = AVCaptureSessionPreset1280x720;
+//
+//        AVCaptureDevice *backCamera = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+//        if (!backCamera) {
+//            NSLog(@"Unable to access back camera!");
+//    //        return;
+//        } else {
+//            NSError *error;
+//            _videoInputDevice = [AVCaptureDeviceInput deviceInputWithDevice:backCamera
+//                                                                                error:&error];
+//            if (!error) {
+//                //Step 9
+//                if ([_captureSession canAddInput:_videoInputDevice]) {
+//                    [_captureSession addInput:_videoInputDevice];
+//                }
+//            }
+//            else {
+//                NSLog(@"Error Unable to initialize back camera: %@", error.localizedDescription);
+//            }
+//
+//            _videoPreviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
+//            if (_videoPreviewLayer) {
+//
+//                _videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+//            }
+//            //ADD MOVIE FILE OUTPUT
+//            NSLog(@"Adding movie file output");
+//            _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+//            Float64 TotalSeconds = 1800;        //Total seconds
+//            int32_t preferredTimeScale = 30;    //Frames per second
+//            CMTime maxDuration = CMTimeMakeWithSeconds(TotalSeconds, preferredTimeScale);    //<<SET MAX DURATION
+//            _movieFileOutput.maxRecordedDuration = maxDuration;
+//            _movieFileOutput.minFreeDiskSpaceLimit = 1024 * 1024;
+//            //<<SET MIN FREE SPACE IN BYTES FOR RECORDING TO CONTINUE ON A VOLUME
+//
+//            if ([_captureSession canAddOutput:_movieFileOutput])
+//                [_captureSession addOutput:_movieFileOutput];
+//
+//    //        [self CameraSetOutputProperties];
+//
+//            [_captureSession setSessionPreset:AVCaptureSessionPresetHigh];
+//
+//            if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1920x1080])
+//            {
+//                [_captureSession setSessionPreset:AVCaptureSessionPreset1920x1080];
+//            }
+//            else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1280x720])
+//            {
+//                //Check size based configs are supported before setting them
+//                [_captureSession setSessionPreset:AVCaptureSessionPreset1280x720];
+//            }
+//            else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset640x480])
+//            {
+//                //Check size based configs are supported before setting them
+//                [_captureSession setSessionPreset:AVCaptureSessionPreset640x480];
+//            }
+//
+//            _videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+//
+//            self.videoPreviewLayer.frame = self.layer.bounds;
+//            [self.layer addSublayer:self.videoPreviewLayer];
+//
+//
+//            //Step12
+//            dispatch_queue_t globalQueue =  dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+//            dispatch_async(globalQueue, ^{
+//                self.recording = false;
+//                [self.captureSession startRunning];
+//
+//                //Step 13
+//                NSLog(@"session Started");
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    self.videoPreviewLayer.frame = self.bounds;
+//                });
+//            });
+//
+//        }
+//
+//    [self addSubview:_closeBtn];
+//    [self addSubview:_controlBtn];
+//    [self addSubview:_timerShow];
+//    [self addSubview:_removeBtn];
+    
     _captureSession = [AVCaptureSession new];
-    _captureSession.sessionPreset = AVCaptureSessionPreset1280x720;
-    AVCaptureDevice *backCamera = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if (!backCamera) {
-        NSLog(@"Unable to access back camera!");
-//        return;
-    } else {
+//    _captureSession.sessionPreset = AVCaptureSessionPreset1280x720;
+    [_captureSession setSessionPreset:AVCaptureSessionPresetHigh];
+    
+    if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1920x1080])
+    {
+        [_captureSession setSessionPreset:AVCaptureSessionPreset1920x1080];
+    }
+    else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1280x720])
+    {
+        //Check size based configs are supported before setting them
+        [_captureSession setSessionPreset:AVCaptureSessionPreset1280x720];
+    }
+    else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset640x480])
+    {
+        //Check size based configs are supported before setting them
+        [_captureSession setSessionPreset:AVCaptureSessionPreset640x480];
+    }
+    
+    _videoPreviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
+    if (_videoPreviewLayer) {
+        _videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    }
+    _videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+    _videoPreviewLayer.frame = self.layer.bounds;
+    
+    
+    
+    
+    
+  
+    return self;
+}
+
+- (void) cameraViewSetup
+{
+    
+    
+    self.backCamera = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+//    if (!self.backCamera) {
+//        NSLog(@"Unable to access back camera!");
+////        return;
+//    } else {
         NSError *error;
-        _videoInputDevice = [AVCaptureDeviceInput deviceInputWithDevice:backCamera
+        self.videoInputDevice = [AVCaptureDeviceInput deviceInputWithDevice:self.backCamera
                                                                             error:&error];
         if (!error) {
             //Step 9
-            if ([_captureSession canAddInput:_videoInputDevice]) {
-                [_captureSession addInput:_videoInputDevice];
+            if ([self.captureSession canAddInput:self.videoInputDevice]) {
+                [self.captureSession addInput:self.videoInputDevice];
             }
+            
+            //ADD MOVIE FILE OUTPUT
+            NSLog(@"Adding movie file output");
+            _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+            Float64 TotalSeconds = 1800;        //Total seconds
+            int32_t preferredTimeScale = 30;    //Frames per second
+            CMTime maxDuration = CMTimeMakeWithSeconds(TotalSeconds, preferredTimeScale);    //<<SET MAX DURATION
+            _movieFileOutput.maxRecordedDuration = maxDuration;
+            _movieFileOutput.minFreeDiskSpaceLimit = 1024 * 1024;
+            //<<SET MIN FREE SPACE IN BYTES FOR RECORDING TO CONTINUE ON A VOLUME
+            
+            if ([_captureSession canAddOutput:_movieFileOutput])
+                [_captureSession addOutput:_movieFileOutput];
+            
+            //Step12
+            dispatch_queue_t globalQueue =  dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+            dispatch_async(globalQueue, ^{
+                self.recording = false;
+                [self.captureSession startRunning];
+                
+                //Step 13
+                NSLog(@"session Started");
+                
+            });
+            
+            
+//            _videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+            [self.layer addSublayer:self.videoPreviewLayer];
+            [self addSubview:self.closeBtn];
+            [self addSubview:self.controlBtn];
+            [self addSubview:self.timerShow];
+            [self addSubview:self.removeBtn];
         }
         else {
             NSLog(@"Error Unable to initialize back camera: %@", error.localizedDescription);
         }
         
-        _videoPreviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
-        if (_videoPreviewLayer) {
-
-            _videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        }
-        //ADD MOVIE FILE OUTPUT
-        NSLog(@"Adding movie file output");
-        _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-        Float64 TotalSeconds = 1800;        //Total seconds
-        int32_t preferredTimeScale = 30;    //Frames per second
-        CMTime maxDuration = CMTimeMakeWithSeconds(TotalSeconds, preferredTimeScale);    //<<SET MAX DURATION
-        _movieFileOutput.maxRecordedDuration = maxDuration;
-        _movieFileOutput.minFreeDiskSpaceLimit = 1024 * 1024;
-        //<<SET MIN FREE SPACE IN BYTES FOR RECORDING TO CONTINUE ON A VOLUME
-        
-        if ([_captureSession canAddOutput:_movieFileOutput])
-            [_captureSession addOutput:_movieFileOutput];
-        
-//        [self CameraSetOutputProperties];
-        
-        [_captureSession setSessionPreset:AVCaptureSessionPresetHigh];
-        
-        if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1920x1080])
-        {
-            [_captureSession setSessionPreset:AVCaptureSessionPreset1920x1080];
-        }
-        else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset1280x720])
-        {
-            //Check size based configs are supported before setting them
-            [_captureSession setSessionPreset:AVCaptureSessionPreset1280x720];
-        }
-        else if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset640x480])
-        {
-            //Check size based configs are supported before setting them
-            [_captureSession setSessionPreset:AVCaptureSessionPreset640x480];
-        }
-        
-        _videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
-        _videoPreviewLayer.frame = self.bounds;
-        [self.layer addSublayer:_videoPreviewLayer];
-
-        //Step12
-        dispatch_queue_t globalQueue =  dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
-        dispatch_async(globalQueue, ^{
-            self.recording = false;
-            [self.captureSession startRunning];
-            
-            //Step 13
-            NSLog(@"session Started");
-            dispatch_async(dispatch_get_main_queue(), ^{
-                self.videoPreviewLayer.frame = self.bounds;
-            });
-        });
-            
-        
-
-
-    }
+//    }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(changeOrientation)    name:UIDeviceOrientationDidChangeNotification  object:nil];
     
-    [self addSubview:_closeBtn];
-    [self addSubview:_controlBtn];
-    [self addSubview:_timerShow];
-    [self addSubview:_removeBtn];
-    return self;
 }
 
 - (void)cameraSetOutputProperties
@@ -208,7 +302,6 @@
         self.controlBtn.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 50);
         self.timerShow.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 90);
         [self checkDeviceOrientation];
-        self.videoPreviewLayer.frame = self.bounds;
     }
 }
 
@@ -230,6 +323,17 @@
     {
         self.videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
         returnValue = @"portrait";
+    }
+    
+    if (self.fullscreenMode == false)
+    {
+        self.layer.cornerRadius = 10;
+        self.layer.masksToBounds = true;
+        self.videoPreviewLayer.frame = self.layer.bounds;
+    } else {
+        self.layer.cornerRadius = 0;
+        self.layer.masksToBounds = true;
+        self.videoPreviewLayer.frame = self.layer.bounds;
     }
 
     return returnValue;
@@ -253,17 +357,18 @@
     
     self.frame = newFrame;
     [self checkDeviceOrientation];
-    self.videoPreviewLayer.frame = self.bounds;
+    
 }
 
 - (void)changeInlayView
 {
-    [self handlerFrame];
     self.closeBtn.hidden = true;
     self.controlBtn.hidden = true;
     self.removeBtn.hidden = true;
     self.timerShow.hidden = true;
     self.fullscreenMode = false;
+    [self handlerFrame];
+    
 }
 
 - (void)removeRecordingView
@@ -284,7 +389,9 @@
     }
     [self.timer invalidate];
     [self handlerFrame];
-    
+    [self.captureSession removeInput:self.videoInputDevice];
+    [self.captureSession removeOutput:self.movieFileOutput];
+
     [self removeFromSuperview];
 }
 
@@ -302,7 +409,7 @@
         
         NSString *timeShow = [NSString stringWithFormat:@"%02d:%02d", self.timeMin, self.timeSec];
         self.timerShow.text = timeShow;
-        
+        self.timerShow.hidden = false;
         [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"StopIcon"] forState:UIControlStateNormal];
         self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(timerTick:) userInfo:nil repeats:YES];
         [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
@@ -321,6 +428,7 @@
         }
         [self.movieFileOutput startRecordingToOutputFileURL:outPutURL recordingDelegate:self];
     } else {
+        [self.timer invalidate];
         self.recording = false;
         self.timerShow.hidden = true;
         [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
@@ -360,20 +468,20 @@
         self.controlBtn.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 50);
         self.timerShow.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 90);
 
-        /*Commented By Me*/
-//        if (self.recording == true)
-//        {
-//            self.timerShow.hidden = false;
-//        }
-//        else
-//        {
-//            self.timerShow.hidden = true;
-//        }
         
+        if (self.recording == true)
+        {
+            self.timerShow.hidden = false;
+        }
+        else
+        {
+            self.timerShow.hidden = true;
+        }
+        
+        self.fullscreenMode = true;
         
         [self checkDeviceOrientation];
-        self.videoPreviewLayer.frame = self.bounds;
-        self.fullscreenMode = true;
+        
     }
 }
 
@@ -394,11 +502,11 @@
         newFrame.origin.x = self.originalPoint.x;
         newFrame.origin.y = parentSize.height - landscapeSize.height - self.bottomOffset;
     }
+    self.fullscreenMode = false;
     [self checkDeviceOrientation];
-    self.videoPreviewLayer.frame = self.bounds;
     
     self.frame = newFrame;
-    self.fullscreenMode = false;
+    
 }
 
 
@@ -461,36 +569,38 @@ didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
 //            }];
 //        }
 
-        
-        __block PHObjectPlaceholder *placeholder;
-        __block NSString *assetURL;
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+        if (status == PHAuthorizationStatusAuthorized) {
+            __block PHObjectPlaceholder *placeholder;
+            __block NSString *assetURL;
 
-            [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-                PHAssetChangeRequest* createAssetRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:outputFileURL];
-                placeholder = [createAssetRequest placeholderForCreatedAsset];
-                assetURL = [placeholder localIdentifier];
-            } completionHandler:^(BOOL success, NSError *error) {
-                
-                if (success)
-                {
-                   NSLog(@"didFinishRecordingToOutputFileAtURL - success for ios9");
-                    NSLog(@"Result URL = %@", assetURL);
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    PHAssetChangeRequest* createAssetRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:outputFileURL];
+                    placeholder = [createAssetRequest placeholderForCreatedAsset];
+                    assetURL = [placeholder localIdentifier];
+                } completionHandler:^(BOOL success, NSError *error) {
                     
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self removeRecordingView];
-                    });
-                    
-                    if ([self.delegate respondsToSelector:@selector(videoRecordingView:didFinishRecording:)]) {
-                        NSLog(@"Delegate Called = ****");
-                        [self.delegate videoRecordingView:self didFinishRecording:outputFileURL];
+                    if (success)
+                    {
+                       NSLog(@"didFinishRecordingToOutputFileAtURL - success for ios9");
+                        NSLog(@"Result URL = %@", assetURL);
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self removeRecordingView];
+                        });
+                        
+                        if ([self.delegate respondsToSelector:@selector(videoRecordingView:didFinishRecording:)]) {
+                            NSLog(@"Delegate Called = ****");
+                            [self.delegate videoRecordingView:self didFinishRecording:outputFileURL];
+                        }
                     }
-                }
-                else
-                {
-                    NSLog(@"%@", error);
-                }
-            }];
-        
+                    else
+                    {
+                        NSLog(@"%@", error);
+                    }
+                }];
+            }
+        }];
     }
 }
 
