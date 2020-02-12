@@ -184,12 +184,7 @@
     }
     _videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
     _videoPreviewLayer.frame = self.layer.bounds;
-    
-    
-    
-    
-    
-  
+      
     return self;
 }
 
@@ -365,7 +360,15 @@
     self.closeBtn.hidden = true;
     self.controlBtn.hidden = true;
     self.removeBtn.hidden = true;
-    self.timerShow.hidden = true;
+    if (self.recording == true)
+    {
+        self.timerShow.hidden = false;
+        self.timerShow.center = CGPointMake(self.originSize.width / 2, self.originSize.height - 20);
+    }
+    else
+    {
+        self.timerShow.hidden = true;
+    }
     self.fullscreenMode = false;
     [self handlerFrame];
     

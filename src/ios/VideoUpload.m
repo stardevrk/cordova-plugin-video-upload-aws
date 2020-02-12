@@ -20,6 +20,8 @@
     NSString *region = [command.arguments objectAtIndex:1];
     NSString *bucket = [command.arguments objectAtIndex:2];
     NSString *folder = [command.arguments objectAtIndex:3];
+    NSNumber *inlayViewWidth = [command.arguments objectAtIndex:4];
+    NSNumber *inlayViewHeight = [command.arguments objectAtIndex:5];
     [_picker setupAWSS3:CognitoPoolID region:region bucket:bucket folder:folder];
     _picker.delegate = self;
     _picker.title = @"Albums";
@@ -30,8 +32,10 @@
     _picker.colsInPortrait = 3;
     _picker.colsInLandscape = 5;
     _picker.minimumInteritemSpacing = 2.0;
-
-    CGSize recordingViewSize = CGSizeMake(180, 300);
+    
+    float rcViewWidth = [inlayViewWidth floatValue];
+    float rcViewHeight = [inlayViewHeight floatValue];
+    CGSize recordingViewSize = CGSizeMake(rcViewWidth, rcViewHeight);
     CGPoint recordingViewPoint = CGPointMake(30, self.webView.frame.size.height - 300 - 40);
     UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
