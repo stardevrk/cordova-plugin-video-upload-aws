@@ -1,4 +1,3 @@
-cordova.define("cordova-plugin-video-upload.VideoUpload", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 exports.coolMethod = function (arg0, success, error) {
@@ -26,5 +25,3 @@ var VideoUpload = {
 };
 
 module.exports = VideoUpload;
-    
-});
