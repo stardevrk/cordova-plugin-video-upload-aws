@@ -60,72 +60,78 @@
 - (void)startUpload:(CDVInvokedUrlCommand*)command {
     self.actionCallbackId = command.callbackId;
            
-    
+    UIAlertController *alert;
+        if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+        {
+            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
+            message:nil
+            preferredStyle:UIAlertControllerStyleAlert];
+        } else {
+            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
+            message:nil
+            preferredStyle:UIAlertControllerStyleActionSheet];
+        };
         
-        
-
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
-                message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Video Upload"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Ok action example
-                [self.commandDelegate runInBackground:^{
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
-                        {
-                            [self.viewController showViewController:self.picker sender:nil];
-                        } else {
-                            [self.viewController presentViewController:self.picker animated:YES completion:nil];
-                        };
-                    });
-                }];
-            }];
-            UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Other action
-                
-//                    [self.webView addSubview:self.recordingView];
-                
-                AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-                if(authStatus == AVAuthorizationStatusAuthorized)
-                {
-                    NSLog(@"Camera access is granted!!!");
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.recordingView cameraViewSetup];
-                            [self.webView addSubview:self.recordingView];
-                        });
-                    
-                        
-                } else if (authStatus == AVAuthorizationStatusNotDetermined) {
-                    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted)
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Video Upload"]
+            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            // Ok action example
+            [self.commandDelegate runInBackground:^{
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
                     {
-                        if(granted)
-                        {
-                            NSLog(@"Granted access to %@", AVMediaTypeVideo);
-                            
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [self.recordingView cameraViewSetup];
-                                    [self.webView addSubview:self.recordingView];
-                                });
-                            
-                        }
-                        else
-                        {
-                            NSLog(@"Not granted access to %@", AVMediaTypeVideo);
-
-                        }
-                    }];
-                }
-                
+                        [self.viewController showViewController:self.picker sender:nil];
+                    } else {
+                        [self.viewController presentViewController:self.picker animated:YES completion:nil];
+                    };
+                });
             }];
-            UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-            [alert addAction:okAction];
-            [alert addAction:otherAction];
-            [alert addAction:cancelAction];
+        }];
+        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record"]
+            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            // Other action
+            
+    //                    [self.webView addSubview:self.recordingView];
+            
+            AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+            if(authStatus == AVAuthorizationStatusAuthorized)
+            {
+                NSLog(@"Camera access is granted!!!");
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.recordingView cameraViewSetup];
+                        [self.webView addSubview:self.recordingView];
+                    });
+                
+                    
+            } else if (authStatus == AVAuthorizationStatusNotDetermined) {
+                [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted)
+                {
+                    if(granted)
+                    {
+                        NSLog(@"Granted access to %@", AVMediaTypeVideo);
+                        
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.recordingView cameraViewSetup];
+                                [self.webView addSubview:self.recordingView];
+                            });
+                        
+                    }
+                    else
+                    {
+                        NSLog(@"Not granted access to %@", AVMediaTypeVideo);
+
+                    }
+                }];
+            }
+            
+        }];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:okAction];
+        [alert addAction:otherAction];
+        [alert addAction:cancelAction];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
             [self.viewController presentViewController:alert animated:YES completion:nil];
-          
-       
+        });
         
   
 }
