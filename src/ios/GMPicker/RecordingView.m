@@ -216,8 +216,16 @@
             _movieFileOutput.minFreeDiskSpaceLimit = 1024 * 1024;
             //<<SET MIN FREE SPACE IN BYTES FOR RECORDING TO CONTINUE ON A VOLUME
             
-            if ([_captureSession canAddOutput:_movieFileOutput])
+            if ([_captureSession canAddOutput:_movieFileOutput]) {
                 [_captureSession addOutput:_movieFileOutput];
+            } else {
+                if ([self.delegate respondsToSelector:@selector(videoRecordingView:didFinishAddingCaptureSession:)]) {
+                    NSLog(@"Delegate Called = ****");
+                    NSError *addError = [[NSError alloc] initWithDomain:NSCocoaErrorDomain
+                    code:101 userInfo:nil];
+                    [self.delegate videoRecordingView:self didFinishAddingCaptureSession:addError];
+                }
+            }
             
             //Step12
             dispatch_queue_t globalQueue =  dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);

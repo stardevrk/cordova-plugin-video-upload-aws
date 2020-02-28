@@ -302,7 +302,19 @@
                     if (error != nil) {
                         NSLog(@"Finished: Error = %@", error);
                         [self.uploadResult setObject:error forKey:@"Error"];
-                        [self.progressController dismissViewControllerAnimated:YES completion:nil];
+                        [self.progressController dismissViewControllerAnimated:YES completion:^{
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if ([error code] == 640) {
+                                    UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Device Storage is Full!"]
+                                            message:@"You can free up space on this device by managing your storage."
+                                            preferredStyle:UIAlertControllerStyleAlert];
+                                        
+                                    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil];
+                                    [alert addAction:cancelAction];
+                                    [self presentViewController:alert animated:YES completion:nil];
+                                }
+                            });
+                        }];
                     } else {
                         NSLog(@"Finished: Response = %@", task.response);
                         NSURL *uploadURL = [task.response URL];

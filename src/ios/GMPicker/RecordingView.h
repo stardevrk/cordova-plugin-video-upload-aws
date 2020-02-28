@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol RecordingViewDelegate <NSObject>
 
 - (void)videoRecordingView:(RecordingView *)view didFinishRecording:(NSURL *)recordingResult;
+- (void)videoRecordingView:(RecordingView *)view didFinishAddingCaptureSession:(NSError *)error;
 
 @end
 
