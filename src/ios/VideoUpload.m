@@ -85,9 +85,10 @@
 }
 
 - (void)startUpload:(CDVInvokedUrlCommand*)command {
+    NSString *pluginType = [command.arguments objectAtIndex:0];
     self.actionCallbackId = command.callbackId;
-           
-    UIAlertController *alert;
+    if ([pluginType isEqualToString:@"standard"]) {
+        UIAlertController *alert;
         if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
         {
             alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
@@ -115,9 +116,6 @@
         }];
         UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record"]
             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-            // Other action
-            
-    //                    [self.webView addSubview:self.recordingView];
             
             if ([self checkFreeSpace]) {
                 AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -171,6 +169,52 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.viewController presentViewController:alert animated:YES completion:nil];
         });
+    }
+    
+    if ([pluginType isEqualToString:@"record"]) {
+        if ([self checkFreeSpace]) {
+            AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+            if(authStatus == AVAuthorizationStatusAuthorized)
+            {
+                NSLog(@"Camera access is granted!!!");
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.recordingView cameraViewSetup];
+                        [self.webView addSubview:self.recordingView];
+                    });
+                
+                    
+            } else if (authStatus == AVAuthorizationStatusNotDetermined) {
+                [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted)
+                {
+                    if(granted)
+                    {
+                        NSLog(@"Granted access to %@", AVMediaTypeVideo);
+                        
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.recordingView cameraViewSetup];
+                                [self.webView addSubview:self.recordingView];
+                            });
+                        
+                    }
+                    else
+                    {
+                        NSLog(@"Not granted access to %@", AVMediaTypeVideo);
+
+                    }
+                }];
+            }
+        } else {
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Device Storage is almost Full!"]
+                    message:@"You can free up space on this device by managing your storage."
+                    preferredStyle:UIAlertControllerStyleAlert];
+                
+            UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil];
+            [alert addAction:cancelAction];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.viewController presentViewController:alert animated:YES completion:nil];
+            });
+        }
+    }
         
   
 }
