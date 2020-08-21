@@ -201,11 +201,17 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         //            }];
         //
         //        }
-        
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+        options.synchronous = NO;
+        options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+        options.networkAccessAllowed = YES;
+        options.progressHandler = ^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+            NSLog(@"Dictionary: %@", [info description]);
+        };
         [self.imageManager requestImageForAsset:cell.asset
-                                     targetSize:AssetGridThumbnailSize
-                                    contentMode:PHImageContentModeAspectFill
-                                        options:nil
+                                     targetSize:CGSizeMake(cell.asset.pixelWidth, cell.asset.pixelHeight)
+                                    contentMode:PHImageContentModeAspectFit
+                                        options:options
                                   resultHandler:^(UIImage *result, NSDictionary *info)
                                     {
                                         // Only update the thumbnail if the cell tag hasn't changed. Otherwise, the cell has been re-used.
@@ -369,10 +375,17 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         //            }];
         //
         //        }
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+        options.synchronous = NO;
+        options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+        options.networkAccessAllowed = YES;
+        options.progressHandler = ^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+            NSLog(@"Dictionary: %@", [info description]);
+        };
         [self.imageManager requestImageForAsset:asset
-                                     targetSize:AssetGridThumbnailSize
-                                    contentMode:PHImageContentModeAspectFill
-                                        options:nil
+                                     targetSize:CGSizeMake(asset.pixelWidth, asset.pixelHeight)
+                                    contentMode:PHImageContentModeAspectFit
+                                        options:options
                                   resultHandler:^(UIImage *result, NSDictionary *info) {
                                       
                                       // Only update the thumbnail if the cell tag hasn't changed. Otherwise, the cell has been re-used.

@@ -91,16 +91,16 @@
         UIAlertController *alert;
         if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
         {
-            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
+            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"How do you want to upload Video?"]
             message:nil
             preferredStyle:UIAlertControllerStyleAlert];
         } else {
-            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"What do you want?"]
+            alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"How do you want to upload Video?"]
             message:nil
             preferredStyle:UIAlertControllerStyleActionSheet];
         };
         
-        UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Video Upload"]
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"From Camera Roll"]
             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
             // Ok action example
             [self.commandDelegate runInBackground:^{
@@ -114,7 +114,7 @@
                 });
             }];
         }];
-        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record"]
+        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record Now"]
             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
             
             if ([self checkFreeSpace]) {
@@ -217,6 +217,41 @@
     }
         
   
+}
+
+- (void)initLive:(CDVInvokedUrlCommand *)command {
+    if (!_livePreview){
+        CGRect testRect = CGRectMake(0, 0, 180, 300);
+        _livePreview = [[LivePreview alloc] initWithFrame:testRect];
+    }
+    
+    NSNumber *inlayViewWidth = [command.arguments objectAtIndex:0];
+    NSNumber *inlayViewHeight = [command.arguments objectAtIndex:1];
+    float rcViewWidth = [inlayViewWidth floatValue];
+    float rcViewHeight = [inlayViewHeight floatValue];
+    CGSize liveViewSize = CGSizeMake(rcViewWidth, rcViewHeight);
+    CGPoint liveViewPoint = CGPointMake(30, self.webView.frame.size.height - 300 - 40);
+    CGSize webviewSize = self.webView.frame.size;
+    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    [_livePreview setupOriginalViewPort:liveViewSize leftCorner:liveViewPoint bottomOffset:40 startOrientation:UIInterfaceOrientationIsPortrait(interfaceOrientation) startingParentSize:webviewSize];
+    self.actionCallbackId = command.callbackId;
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:result callbackId:self.actionCallbackId];
+    }];
+}
+
+- (void)startBroadcast:(CDVInvokedUrlCommand *)command {
+    NSString *rtmpURL = [command.arguments objectAtIndex:0];
+    [_livePreview setupPreview:rtmpURL];
+    
+    [self.webView addSubview:_livePreview];
+        
+//    self.actionCallbackId = command.callbackId;
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:result callbackId:self.actionCallbackId];
+    }];
 }
 
  #pragma mark - GMImagePickerControllerDelegate

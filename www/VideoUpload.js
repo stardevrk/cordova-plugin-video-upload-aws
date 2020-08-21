@@ -13,7 +13,14 @@ function parseOptions(args) {
     a.push(args.cameraWidth || 0);
     a.push(args.cameraHeight || 0);
     return a;
-}    
+} 
+
+function parseLiveOptions(args) {
+    var a = [];
+    a.push(args.cameraWidth || 0);
+    a.push(args.cameraHeight || 0);
+    return a;
+}
     
 var VideoUpload = {
     init:function(options) {
@@ -21,6 +28,12 @@ var VideoUpload = {
     },
     startUpload:function(pluginType, successCB, errorCB) {
         exec(successCB, errorCB, 'VideoUpload', 'startUpload', [pluginType]);
+    },
+    initLive:function(options) {
+        exec(function() {}, function() {}, 'VideoUpload', 'initLive', parseLiveOptions(options));
+    },
+    startBroadcast:function(rtmpURL) {
+        exec(function() {}, function() {}, 'VideoUpload', 'startBroadcast', [rtmpURL]);
     }
 };
 
