@@ -103,7 +103,10 @@
         UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"From Camera Roll"]
             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
             // Ok action example
-            [self.commandDelegate runInBackground:^{
+            
+            PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+            if (status == PHAuthorizationStatusAuthorized) {
+                 // Access has been granted.
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
                     {
@@ -112,7 +115,35 @@
                         [self.viewController presentViewController:self.picker animated:YES completion:nil];
                     };
                 });
-            }];
+            }
+
+            else if (status == PHAuthorizationStatusDenied) {
+                 // Access has been denied.
+            }
+
+            else if (status == PHAuthorizationStatusNotDetermined) {
+
+                 // Access has not been determined.
+                 [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+
+                     if (status == PHAuthorizationStatusAuthorized) {
+                         // Access has been granted.
+                         dispatch_async(dispatch_get_main_queue(), ^{
+                             if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+                             {
+                                 [self.viewController showViewController:self.picker sender:nil];
+                             } else {
+                                 [self.viewController presentViewController:self.picker animated:YES completion:nil];
+                             };
+                         });
+                     }
+
+                     else {
+                         // Access has been denied.
+                     }
+                 }];
+            }
+            
         }];
         UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record Now"]
             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
@@ -220,6 +251,41 @@
 }
 
 - (void)initLive:(CDVInvokedUrlCommand *)command {
+    AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    switch (status) {
+        case AVAuthorizationStatusNotDetermined:{
+            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+                if (granted) {
+                }
+            }];
+            break;
+        }
+        case AVAuthorizationStatusAuthorized:{
+            break;
+        }
+        case AVAuthorizationStatusDenied:
+        case AVAuthorizationStatusRestricted:
+            
+            break;
+        default:
+            break;
+    }
+    AVAuthorizationStatus auStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio];
+    switch (auStatus) {
+        case AVAuthorizationStatusNotDetermined:{
+            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
+            }];
+            break;
+        }
+        case AVAuthorizationStatusAuthorized:{
+            break;
+        }
+        case AVAuthorizationStatusDenied:
+        case AVAuthorizationStatusRestricted:
+            break;
+        default:
+            break;
+    }
     if (!_livePreview){
         CGRect testRect = CGRectMake(0, 0, 180, 300);
         _livePreview = [[LivePreview alloc] initWithFrame:testRect];

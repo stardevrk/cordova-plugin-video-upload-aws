@@ -63,7 +63,7 @@
             CGRect labelRect = CGRectMake(70, 100, 130, 20);
             _stateLabel = [[UILabel alloc] initWithFrame:labelRect];
             _stateLabel.text = @"00:00";
-            _stateLabel.hidden = false;
+            _stateLabel.hidden = true;
             _stateLabel.textColor = [UIColor whiteColor];
             _stateLabel.backgroundColor = [UIColor redColor];
             _stateLabel.layer.cornerRadius = 5;
@@ -291,6 +291,7 @@
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"PreViewTouched");
+    self.stateLabel.hidden = false;
     
     if (self.fullscreenMode == false)
     {
@@ -364,6 +365,7 @@
 
 - (void)liveSession:(nullable LFLiveSession *)session liveStateDidChange:(LFLiveState)state{
     NSLog(@"liveStateDidChange: %ld", state);
+    self.stateLabel.hidden = false;
     switch (state) {
         case LFLiveReady:
             _stateLabel.text = @"Not Connected";
