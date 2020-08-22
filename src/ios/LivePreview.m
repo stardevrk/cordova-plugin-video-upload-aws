@@ -105,7 +105,7 @@
     
 //    [self sendSubviewToBack:self.preview];
     [self.session setSaveLocalVideo:false];
-    [self.session setMuted:true];
+//    [self.session setMuted:true];
     [self.session setTorch:false];
 }
 
