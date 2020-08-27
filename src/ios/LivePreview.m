@@ -107,6 +107,8 @@
     [self.session setSaveLocalVideo:false];
 //    [self.session setMuted:true];
     [self.session setTorch:false];
+    
+    [self touchPreview];
 }
 
 
@@ -288,9 +290,8 @@
     
 }
 
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+- (void)touchPreview
 {
-    NSLog(@"PreViewTouched");
     self.stateLabel.hidden = false;
     
     if (self.fullscreenMode == false)
@@ -313,6 +314,13 @@
         [self checkDeviceOrientation];
         
     }
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    NSLog(@"PreViewTouched");
+    
+    [self touchPreview];
 }
 
 - (void)removeRecordingView

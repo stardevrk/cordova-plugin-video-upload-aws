@@ -245,6 +245,8 @@
             [self addSubview:self.controlBtn];
             [self addSubview:self.timerShow];
             [self addSubview:self.removeBtn];
+            
+            [self touchPreview];
         }
         else {
             NSLog(@"Error Unable to initialize back camera: %@", error.localizedDescription);
@@ -459,10 +461,8 @@
     self.timerShow.text = timeShow;
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchPreview
 {
-    NSLog(@"View Touched");
-    
     if (self.fullscreenMode == false)
     {
         CGRect newFrame = self.frame;
@@ -494,6 +494,13 @@
         [self checkDeviceOrientation];
         
     }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    NSLog(@"View Touched");
+    
+    [self touchPreview];
 }
 
 - (void)setupOriginalViewPort:(CGSize)viewSize leftCorner:(CGPoint)viewPoint bottomOffset:(CGFloat)bottomPoint startOrientation:(Boolean)isPortrait startingParentSize:(CGSize)parentSize
