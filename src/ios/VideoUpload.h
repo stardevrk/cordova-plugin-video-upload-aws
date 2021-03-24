@@ -23,4 +23,6 @@
 
 - (void)startBroadcast:(CDVInvokedUrlCommand*)command;
 
+- (void)addWatcher:(CDVInvokedUrlCommand*)command;
+
 @end
