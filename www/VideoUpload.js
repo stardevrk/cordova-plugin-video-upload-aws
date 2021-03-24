@@ -1,4 +1,6 @@
 var exec = require('cordova/exec');
+var channel = require('cordova/channel');
+var cordova = require('cordova');
 
 exports.coolMethod = function (arg0, success, error) {
     exec(success, error, 'VideoUpload', 'coolMethod', [arg0]);
@@ -34,7 +36,36 @@ var VideoUpload = {
     },
     startBroadcast:function(rtmpURL) {
         exec(function() {}, function() {}, 'VideoUpload', 'startBroadcast', [rtmpURL]);
+    },
+    addWatcher: function(successCB, errorCB) {
+        exec(successCB, errorCB, 'VideoUpload', 'addWatcher');
     }
 };
+
+channel.createSticky('onCordovaConnectionReady');
+channel.waitForInitialization('onCordovaConnectionReady');
+var vuTimerId = null;
+var vuTimeout = 500;
+
+channel.onCordovaReady.subscribe(function () {
+    VideoUpload.addWatcher(function(captured) {
+        if (vuTimerId != null) {
+            clearTimeout(vuTimeout)
+        } 
+        vuTimeout = setTimeout(() => {
+            cordova.fireDocumentEvent('captured', captured);
+        }, vuTimeout)
+
+        // should only fire this once
+        if (channel.onCordovaConnectionReady.state !== 2) {
+            channel.onCordovaConnectionReady.fire();
+        }
+    }, function(e) {
+        // should only fire this once
+        if (channel.onCordovaConnectionReady.state !== 2) {
+            channel.onCordovaConnectionReady.fire();
+        }
+    });
+});
 
 module.exports = VideoUpload;

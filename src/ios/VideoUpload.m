@@ -57,6 +57,48 @@
      }];
 }
 
+-(void)addWatcher:(CDVInvokedUrlCommand*)command
+{
+    self.watcherCallbackId = command.callbackId;
+    if (@available(iOS 11.0, *)) {
+      [[NSNotificationCenter defaultCenter] addObserver:self
+                    selector:@selector(handleScreenCaptureChange)
+       name:UIScreenCapturedDidChangeNotification object:nil];
+    }
+}
+
+-(void)handleScreenCaptureChange
+{
+    UIScreen *aScreen;
+    BOOL isMainScreenMirrored = NO;
+    BOOL screenCaptured = NO;
+    NSArray *screens = [UIScreen screens];
+    for (aScreen in screens)
+    {
+        if ([aScreen respondsToSelector:@selector(mirroredScreen)]
+            && [aScreen mirroredScreen] == [UIScreen mainScreen])
+        {
+            // The main screen is being mirrored.
+            isMainScreenMirrored = YES;
+        }
+    }
+
+    if (@available(iOS 11.0, *)) {
+        screenCaptured = [[UIScreen mainScreen] isCaptured];
+    }
+    
+    NSString *sendResult;
+    if (screenCaptured == YES) {
+        sendResult =@"YES";
+    } else {
+        sendResult =@"NO";
+    }
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:sendResult];
+
+    [result setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:result callbackId:self.watcherCallbackId];
+}
+
 - (BOOL)checkFreeSpace
 {
     uint64_t totalSpace = 0;
