@@ -9,6 +9,7 @@
 @interface VideoUpload : CDVPlugin <GMImagePickerControllerDelegate, RecordingUploaderDelegate, RecordingViewDelegate>
 
 @property(nonatomic, copy) NSString* actionCallbackId;
+@property(nonatomic, copy) NSString* watcherCallbackId;
 
 @property(nonatomic, copy) GMImagePickerController* picker;
 @property(nonatomic, copy) RecordingView* recordingView;
