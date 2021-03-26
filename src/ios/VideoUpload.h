@@ -11,6 +11,8 @@
 @property(nonatomic, copy) NSString* actionCallbackId;
 @property(nonatomic, copy) NSString* watcherCallbackId;
 
+@property(nonatomic) BOOL capturing;
+
 @property(nonatomic, copy) GMImagePickerController* picker;
 @property(nonatomic, copy) RecordingView* recordingView;
 @property(nonatomic, copy) RecordingUploader *recordingUploader;
@@ -25,5 +27,7 @@
 - (void)startBroadcast:(CDVInvokedUrlCommand*)command;
 
 - (void)addWatcher:(CDVInvokedUrlCommand*)command;
+
+- (void)getCurrentCapturing:(CDVInvokedUrlCommand*)command;
 
 @end

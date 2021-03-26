@@ -39,6 +39,9 @@ var VideoUpload = {
     },
     addWatcher: function(successCB, errorCB) {
         exec(successCB, errorCB, 'VideoUpload', 'addWatcher');
+    },
+    getCapturing: function(successCB, errorCB) {
+        exec(successCB, errorCB, 'VideoUpload', 'getCurrentCapturing');
     }
 };
 

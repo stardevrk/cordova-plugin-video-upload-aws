@@ -60,11 +60,19 @@
 -(void)addWatcher:(CDVInvokedUrlCommand*)command
 {
     self.watcherCallbackId = command.callbackId;
+    self.capturing = NO;
     if (@available(iOS 11.0, *)) {
       [[NSNotificationCenter defaultCenter] addObserver:self
                     selector:@selector(handleScreenCaptureChange)
        name:UIScreenCapturedDidChangeNotification object:nil];
     }
+}
+
+-(void)getCurrentCapturing:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:self.capturing];
+
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 -(void)handleScreenCaptureChange
@@ -90,10 +98,12 @@
     NSString *sendResult;
     if (screenCaptured == YES) {
         sendResult =@"YES";
+        self.capturing = YES;
     } else {
         sendResult =@"NO";
+        self.capturing = NO;
     }
-    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:sendResult];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:screenCaptured];
 
     [result setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:result callbackId:self.watcherCallbackId];
