@@ -12,5 +12,7 @@
 
 - (void)saveBlockRotation:(BOOL)blockRotation;
 - (BOOL)getBlockRotation;
+- (void) saveUploadingStatus: (BOOL)uploading;
+- (BOOL) getUploadingStatus;
 
 @end

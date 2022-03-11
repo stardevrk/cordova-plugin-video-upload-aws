@@ -7,6 +7,7 @@
 
 #import "LivePreview.h"
 #import "AppDelegate+VideoUpload.h"
+#include <putMedia.h>
 
 
 @implementation LivePreview
@@ -21,69 +22,73 @@
 
 - (instancetype)initWithFrame:(CGRect)frame{
     if(self = [super initWithFrame:frame]){
-//        self.backgroundColor = [UIColor clearColor];
+        self.originalRect = frame;
+        NSLog(@"Init Frame ==== %f, %f, %f, %f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+        self.originSize = CGSizeMake(frame.size.width, frame.size.height);
+        self.bottomOffset = 60;
+        self.originalPoint = CGPointMake(30, self.superview.frame.size.height - frame.size.height - self.bottomOffset);
         [self requestAccessForVideo];
         [self requestAccessForAudio];
+//        self.fullscreenMode = false;
         
-        if (!_preview) {
-            _preview = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.originSize.width, self.originSize.height)];
-        }
         if (!_closeBtn) {
             CGRect closeBtnRect = CGRectMake(120, 10, 40, 40);
            _closeBtn = [[UIButton alloc] init];
            _closeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
            _closeBtn.frame = closeBtnRect;
-           [_closeBtn setBackgroundImage:[UIImage imageNamed:@"SwitchIcon"] forState:UIControlStateNormal];
-           _closeBtn.hidden = true;
+           [_closeBtn setBackgroundImage:[UIImage imageNamed:@"minimize"] forState:UIControlStateNormal];
            [_closeBtn addTarget:self action:@selector(changeInlayView) forControlEvents:UIControlEventTouchUpInside];
         }
        
         if (!_removeBtn) {
-            CGRect removeBtnRect = CGRectMake(10, 10, 40, 40);
+            CGRect removeBtnRect = CGRectMake(10, 10, 70, 40);
             _removeBtn = [[UIButton alloc] init];
             _removeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
             _removeBtn.frame = removeBtnRect;
-            [_removeBtn setBackgroundImage:[UIImage imageNamed:@"CloseIcon"] forState:UIControlStateNormal];
-            _removeBtn.hidden = true;
-            [_removeBtn addTarget:self action:@selector(removeRecordingView) forControlEvents:UIControlEventTouchUpInside];
+            [_removeBtn setBackgroundImage:[UIImage imageNamed:@"live"] forState:UIControlStateNormal];
         }
         if (!_controlBtn) {
-            CGRect controlBtnRect = CGRectMake(80, 160, 40, 40);
+            CGRect controlBtnRect = CGRectMake(80, 160, 60, 60);
            _controlBtn = [[UIButton alloc] init];
            _controlBtn = [UIButton buttonWithType:UIButtonTypeCustom];
            _controlBtn.frame = controlBtnRect;
-           [_controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
-           _controlBtn.hidden = true;
+           [_controlBtn setBackgroundImage:[UIImage imageNamed:@"close"] forState:UIControlStateNormal];
            _controlBtn.exclusiveTouch = true;
-           [_controlBtn addTarget:self action:@selector(clickStartButton) forControlEvents:UIControlEventTouchUpInside];
+           [_controlBtn addTarget:self action:@selector(removeRecordingView) forControlEvents:UIControlEventTouchUpInside];
         }
-        
         
         if (!_stateLabel) {
             CGRect labelRect = CGRectMake(70, 100, 130, 20);
             _stateLabel = [[UILabel alloc] initWithFrame:labelRect];
             _stateLabel.text = @"00:00";
-            _stateLabel.hidden = true;
             _stateLabel.textColor = [UIColor whiteColor];
             _stateLabel.backgroundColor = [UIColor redColor];
             _stateLabel.layer.cornerRadius = 5;
             _stateLabel.layer.masksToBounds = true;
             _stateLabel.textAlignment = NSTextAlignmentCenter;
-            _stateLabel.text = @"Not Connected";
+            _stateLabel.text = @"Not Sending";
             _stateLabel.font = [UIFont boldSystemFontOfSize:14.f];
         }
-        
-        
-        [self addZoomControl];
+
         self.currentScaleFactor = 1.0f;
         self.streaming = false;
         
         self.layer.cornerRadius = 10;
         self.layer.masksToBounds = true;
-//        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(changeOrientation)    name:UIApplicationWillChangeStatusBarOrientationNotification  object:nil];
+        [self addSubview:self.stateLabel];
+        [self updateStateLabel];
+        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+        
+        UITapGestureRecognizer *singleFingerTap =
+          [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                  action:@selector(handleSingleTap:)];
+        [self addGestureRecognizer:singleFingerTap];
+    
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(changeOrientation)    name:UIDeviceOrientationDidChangeNotification  object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(checkStreaming)    name:UIApplicationDidEnterBackgroundNotification  object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(checkStreaming)    name:UIApplicationDidReceiveMemoryWarningNotification  object:nil];
+//        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(checkStreaming)    name:UIApplicationDidEnterBackgroundNotification  object:nil];
+//        [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(checkStreaming)    name:UIApplicationDidReceiveMemoryWarningNotification  object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resumeStreaming) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopStreaming) name:UIApplicationDidEnterBackgroundNotification object:nil];
         
         AppDelegate* shared=[UIApplication sharedApplication].delegate;
         [shared saveBlockRotation:TRUE];
@@ -94,22 +99,164 @@
 - (void) setupPreview:(NSString*)rtmpURL
 {
     _rtmpURL = [[NSString alloc] initWithString:rtmpURL];
-//    self.preview.frame = self.bounds;
-//    self.preview.hidden = false;
-////    [self.preview setBackgroundColor:[UIColor redColor]];
-//    [self addSubview:self.preview];
     [self addSubview:self.closeBtn];
-    [self addSubview:self.controlBtn];
     [self addSubview:self.stateLabel];
     [self addSubview:self.removeBtn];
     
-//    [self sendSubviewToBack:self.preview];
-    [self.session setSaveLocalVideo:false];
-//    [self.session setMuted:true];
-    [self.session setTorch:false];
-    
     [self touchPreview];
+//    [self.avSession startRunning];
 }
+
+- (void) addButtons
+{
+    self.closeBtn.center = CGPointMake(self.frame.size.width - 30, 70);
+    self.removeBtn.center = CGPointMake(45, 70);
+    self.controlBtn.center = CGPointMake(self.frame.size.width / 2, self.superview.frame.size.height - 50);
+    [self addSubview:self.removeBtn];
+    [self addSubview:self.closeBtn];
+    [self addSubview:self.controlBtn];
+}
+
+- (void) removeButtons
+{
+    [self.closeBtn removeFromSuperview];
+    [self.removeBtn removeFromSuperview];
+    [self.controlBtn removeFromSuperview];
+}
+
+- (void) updateStateLabel
+{
+    self.stateLabel.center = CGPointMake(self.frame.size.width / 2, self.superview.frame.size.height - 90);
+}
+
+- (void) changeFrameFullscreen
+{
+    CGRect newFrame = self.frame;
+    newFrame.origin.x = 0;
+    newFrame.origin.y = 0;
+    newFrame.size.height = self.superview.frame.size.height;
+    newFrame.size.width = self.superview.frame.size.width;
+    self.frame = newFrame;
+    self.previewLayer.frame = self.bounds;
+    self.layer.masksToBounds = true;
+    [self.superview setNeedsLayout];
+    [self.superview layoutIfNeeded];
+}
+
+- (void) changeFrameOrigin
+{
+//    CGRect newFrame = self.frame;
+//    newFrame.origin.x = self.originalPoint.x;
+//    newFrame.origin.y = self.originalPoint.y;
+//    newFrame.size = self.originSize;
+    self.frame = self.originalRect;
+    self.previewLayer.frame = self.bounds;
+    self.layer.masksToBounds = true;
+    [super layoutSubviews];
+    [self.superview setNeedsLayout];
+    [self.superview layoutIfNeeded];
+}
+
+- (void) initPreviewState
+{
+    self.fullscreenMode = false;
+}
+
+- (void) initSessionWithStream: (NSString*) streamName
+{
+    self.sessionQueue = dispatch_queue_create("session queue", DISPATCH_QUEUE_SERIAL);
+    self.encodeQueue = dispatch_queue_create("encode queue", DISPATCH_QUEUE_SERIAL);
+    dispatch_sync(self.sessionQueue, ^{
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"cert" ofType:@"pem"];
+        const char* cfilePath = [path UTF8String];
+        const char* sName = [streamName UTF8String];
+        initPutMedia(sName, "AKIAUFGOIX4NXI5V6DET", "Hnt+cR/O9CIEvQnRgMc64KN0GqDWZN2jbDxfIK0d", cfilePath);
+        
+        self.device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+        self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+        if (self.audioDevice == nil)
+        {
+            printf("Couldn't create audio capture device");
+        }
+        
+        self.avSession = [[AVCaptureSession alloc] init];
+        self.avSession.sessionPreset = AVCaptureSessionPreset640x480;
+        
+        AVCaptureDeviceInput *audioInput = [AVCaptureDeviceInput deviceInputWithDevice:self.audioDevice error:nil];
+        AVCaptureAudioDataOutput *audioOutput = [[AVCaptureAudioDataOutput alloc] init];
+        [audioOutput setSampleBufferDelegate:self queue:self.encodeQueue];
+        [audioOutput connectionWithMediaType:AVMediaTypeAudio];
+        if ([_avSession canAddInput:audioInput]) {
+            [_avSession addInput:audioInput];
+        }
+        if ([_avSession canAddOutput:audioOutput]) {
+            [_avSession addOutput:audioOutput];
+        }
+        AVCaptureDeviceInput *videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:self.device error:nil];
+        if ([self.avSession canAddInput:videoInput]) {
+            [self.avSession addInput:videoInput];
+        }
+        
+        self.videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+        [self.videoOutput setAlwaysDiscardsLateVideoFrames:NO];
+        [self.videoOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange] forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
+        [self.videoOutput setSampleBufferDelegate:self queue:self.encodeQueue];
+        if ([self.avSession canAddOutput:self.videoOutput]) {
+            [self.avSession addOutput:self.videoOutput];
+        }
+        
+        AVCaptureConnection *connection = [self.videoOutput connectionWithMediaType:AVMediaTypeVideo];
+        [connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+        
+        self.videoEncoder = [[H264Encoder alloc] init];
+//        self.audioEncoder = [[AACEncoder alloc] init];
+        _previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:self.avSession];
+        _previewLayer.frame = self.bounds;
+        _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        [self.layer addSublayer:_previewLayer];
+        
+        [self.avSession startRunning];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [UIApplication sharedApplication].idleTimerDisabled = YES;
+        });
+        self.streaming = TRUE;
+    });
+    
+}
+
+- (void)startSession
+{
+    
+    dispatch_sync(self.sessionQueue, ^{
+        [self.avSession startRunning];
+    });
+    
+}
+- (void)stopSession
+{
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
+    dispatch_sync(self.sessionQueue, ^{
+        [self.avSession stopRunning];
+    });
+}
+
+- (void) setupProducer
+{
+    
+}
+
+- (void) stopStreaming
+{
+    self.streaming = FALSE;
+}
+
+- (void) resumeStreaming
+{
+    [self.videoEncoder stopH264Encode];
+    self.videoEncoder = [[H264Encoder alloc] init];
+    self.streaming = TRUE;
+}
+
 
 
 
@@ -122,7 +269,7 @@
             [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
                 if (granted) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.session setRunning:YES];
+//                        [self.session setRunning:YES];
                     });
                 }
             }];
@@ -131,7 +278,7 @@
         case AVAuthorizationStatusAuthorized:{
             
             //dispatch_async(dispatch_get_main_queue(), ^{
-            [self.session setRunning:YES];
+//            [self.session setRunning:YES];
             //});
             break;
         }
@@ -229,29 +376,28 @@
     
     self.frame = newFrame;
     [self checkDeviceOrientation];
-    
 }
 
 - (void)changeOrientation
 {
     
-    if (self.fullscreenMode == false)
-    {
-        [self handlerFrame];
-    }
-    else
-    {
-        CGRect newFrame = self.frame;
-        newFrame.origin.x = 0;
-        newFrame.origin.y = 0;
-        newFrame.size.height = self.superview.frame.size.height;
-        newFrame.size.width = self.superview.frame.size.width;
-        self.frame = newFrame;
-        self.closeBtn.center = CGPointMake(self.superview.frame.size.width - 30, 70);
-        self.controlBtn.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 50);
-        self.stateLabel.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 90);
-        [self checkDeviceOrientation];
-    }
+//    if (self.fullscreenMode == false)
+//    {
+//        [self handlerFrame];
+//    }
+//    else
+//    {
+//        CGRect newFrame = self.frame;
+//        newFrame.origin.x = 0;
+//        newFrame.origin.y = 0;
+//        newFrame.size.height = self.superview.frame.size.height;
+//        newFrame.size.width = self.superview.frame.size.width;
+//        self.frame = newFrame;
+//        self.closeBtn.center = CGPointMake(self.superview.frame.size.width - 30, 70);
+//        self.controlBtn.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 50);
+//        self.stateLabel.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 90);
+//        [self checkDeviceOrientation];
+//    }
 }
 
 - (void)setupOriginalViewPort:(CGSize)viewSize leftCorner:(CGPoint)viewPoint bottomOffset:(CGFloat)bottomPoint startOrientation:(Boolean)isPortrait startingParentSize:(CGSize)parentSize
@@ -281,73 +427,67 @@
 
 - (void)changeInlayView
 {
-    self.closeBtn.hidden = true;
-    self.controlBtn.hidden = true;
-    self.removeBtn.hidden = true;
-    self.stateLabel.center = CGPointMake(self.originSize.width / 2, self.originSize.height - 20);
-    self.fullscreenMode = false;
-    [self handlerFrame];
     
+//    [self handlerFrame];
+    [self removeButtons];
+    [self changeFrameOrigin];
+//    [self updateStateLabel];
+//    self.fullscreenMode = false;
 }
 
 - (void)touchPreview
 {
-    self.stateLabel.hidden = false;
+//    self.stateLabel.hidden = false;
     
-    if (self.fullscreenMode == false)
-    {
-        CGRect newFrame = self.frame;
-        newFrame.origin.x = 0;
-        newFrame.origin.y = 0;
-        newFrame.size.height = self.superview.frame.size.height;
-        newFrame.size.width = self.superview.frame.size.width;
-        self.frame = newFrame;
-        self.closeBtn.hidden = false;
-        self.closeBtn.center = CGPointMake(self.superview.frame.size.width - 30, 70);
-        self.removeBtn.hidden = false;
-        self.removeBtn.center = CGPointMake(30, 70);
-        self.controlBtn.hidden = false;
-        self.controlBtn.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 50);
-        self.stateLabel.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height - 90);
+//    if (self.fullscreenMode == false)
+//    {
+        [self changeFrameFullscreen];
+//        [self checkDeviceOrientation];
+        [self addButtons];
+//        [self updateStateLabel];
+//        self.fullscreenMode = true;
+//    }
+}
 
-        self.fullscreenMode = true;
-        [self checkDeviceOrientation];
-        
-    }
+- (void)handleSingleTap:(UITapGestureRecognizer *)recognizer
+{
+    NSLog(@"PreViewTouched");
+    [self touchPreview];
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"PreViewTouched");
     
-    [self touchPreview];
+    
+    
 }
 
 - (void)removeRecordingView
 {
     /*Initialize properties*/
     self.fullscreenMode = false;
-    self.closeBtn.hidden = true;
-    self.controlBtn.hidden = true;
-    self.removeBtn.hidden = true;
-    self.stopBtn.hidden = true;
-    if (self.streaming == true)
-    {
-        self.streaming = false;
-        [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
-        [self.session stopLive];
-    }
-    [self handlerFrame];
-    [self removeFromSuperview];
+    self.streaming = FALSE;
+    [self changeFrameOrigin];
+    [self.controlBtn setBackgroundImage:[UIImage imageNamed:@"RecIcon"] forState:UIControlStateNormal];
+    [self stopStreaming];
+    [self stopSession];
     AppDelegate* shared=[UIApplication sharedApplication].delegate;
     [shared saveBlockRotation:FALSE];
+    [self removeFromSuperview];
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    [result setValue:@"finished" forKey:@"status"];
+    if ([self.delegate respondsToSelector:@selector(livePreviewController:finished:)]) {
+        [self.delegate livePreviewController:self finished:result];
+    }
 }
 
 - (void)checkStreaming
 {
     if (self.streaming && self.session) {
-        [self.session stopLive];
+//        [self.session stopLive];
     }
+//    stopPutMedia();
+//    [self.avSession stopRunning];
 }
 
 #pragma mark -- Recognizer
@@ -363,7 +503,7 @@
               atan2f(pinchRecognizer.velocity, pinchVelocityDividerFactor);
 
         self.currentScaleFactor = MAX(1.0, MIN(desiredZoomFactor, maxZoomFactor));
-        [self.session setZoomScale:self.currentScaleFactor];
+//        [self.session setZoomScale:self.currentScaleFactor];
     }
     
  }
@@ -418,16 +558,15 @@
 #pragma mark -- Getter Setter
 - (LFLiveSession*)session{
     if(!_session){
-        LFLiveVideoConfiguration* videoConfig = [LFLiveVideoConfiguration defaultConfiguration];
-        [videoConfig setAutorotate:true];
-       _session = [[LFLiveSession alloc] initWithAudioConfiguration:[LFLiveAudioConfiguration defaultConfiguration] videoConfiguration:videoConfig];
-
-        _session.delegate = self;
-        _session.preView = self;
-        
-        [_session setCaptureDevicePosition:AVCaptureDevicePositionBack];
-        [_session setMuted:true];
-
+//        LFLiveVideoConfiguration* videoConfig = [LFLiveVideoConfiguration defaultConfiguration];
+//        [videoConfig setAutorotate:true];
+//       _session = [[LFLiveSession alloc] initWithAudioConfiguration:[LFLiveAudioConfiguration defaultConfiguration] videoConfiguration:videoConfig];
+//
+//        _session.delegate = self;
+//        _session.preView = self;
+//
+//        [_session setCaptureDevicePosition:AVCaptureDevicePositionBack];
+//        [_session setMuted:true];
     }
     return _session;
 }
@@ -437,13 +576,47 @@
 {
     self.controlBtn.selected = !self.controlBtn.selected;
     if(self.controlBtn.selected){
-        LFLiveStreamInfo *stream = [LFLiveStreamInfo new];
-//        stream.url = @"rtmp://3.89.78.208/live/g121790";
-        stream.url = self.rtmpURL;
-        [self.session startLive:stream];
+//        LFLiveStreamInfo *stream = [LFLiveStreamInfo new];
+//        stream.url = self.rtmpURL;
+//        [self.session startLive:stream];
+        [self startSession];
+        
     }else{
-        [self.session stopLive];
+//        [self.session stopLive];
+        [self stopSession];
     }
+}
+
+#pragma mark AVCaptureVideoDataOutputSampleBufferDelegate AVCaptureAudioDataOutputSampleBufferDelegate
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+        if (captureOutput == self.videoOutput) {
+            NSLog(@"Video Sample Buffer ~~~~~");
+            if (self.streaming == TRUE) {
+                [self.videoEncoder startH264EncodeWithSampleBuffer:sampleBuffer andReturnData:^(NSData *data) {
+                    NSUInteger len = [data length];
+                    void *typedData = malloc(len);
+                    memcpy(typedData, [data bytes], len);
+                    putMedia(typedData, len);
+                }];
+            }
+        }
+        else
+        {
+//            dispatch_sync(self.encodeQueue, ^{
+//                [self.audioEncoder encodeSampleBuffer:sampleBuffer completionBlock:^(NSData *encodedData, NSError *error) {
+////                    NSUInteger len = [encodedData length];
+////                    void *typedData = malloc(len);
+////                    memcpy(typedData, [encodedData bytes], len);
+////                    putAudio(typedData, len);
+//                }];
+//            });
+        }
+}
+
+- (void)didReceiveMemoryWarning {
+//    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 @end

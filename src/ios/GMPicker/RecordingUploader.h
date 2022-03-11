@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)recordingUploadController:(RecordingUploader *)controller didFinishUploading:(NSMutableDictionary *)uploadingResult;
 
+- (void)recordingUploadController:(RecordingUploader *)controller didUploadPercent:(double)percent;
+
 @end
 
 NS_ASSUME_NONNULL_END

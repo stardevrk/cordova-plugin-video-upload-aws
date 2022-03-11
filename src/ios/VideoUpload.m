@@ -1,5 +1,6 @@
 #import "VideoUpload.h"
 #import <UIKit/UIKit.h>
+#import "AppDelegate+VideoUpload.h"
 
 @implementation VideoUpload
 @synthesize actionCallbackId;
@@ -16,12 +17,24 @@
     if (!_recordingUploader){
         _recordingUploader = [[RecordingUploader alloc] init];
     }
+    if (!_selector) {
+        _selector = [[AAMultiSelectViewController alloc] init];
+    }
+    if (!_uploader) {
+        _uploader = [[VidUploader alloc] init];
+    }
     NSString *CognitoPoolID = [command.arguments objectAtIndex:0];
     NSString *region = [command.arguments objectAtIndex:1];
     NSString *bucket = [command.arguments objectAtIndex:2];
     NSString *folder = [command.arguments objectAtIndex:3];
     NSNumber *inlayViewWidth = [command.arguments objectAtIndex:4];
     NSNumber *inlayViewHeight = [command.arguments objectAtIndex:5];
+    NSString *selectionData = [command.arguments objectAtIndex:6];
+    _selectionObject = [self parseSelectionOptions:selectionData];
+//    NSArray *arr = [selectionData componentsSeparatedByString:@","];
+//    NSString *strSecond = [arr objectAtIndex:1];
+    
+    
     [_picker setupAWSS3:CognitoPoolID region:region bucket:bucket folder:folder];
     _picker.delegate = self;
     _picker.title = @"Albums";
@@ -45,11 +58,15 @@
     [_recordingUploader setupRecodingAWSS3:CognitoPoolID region:region bucket:bucket folder:folder];
     _recordingUploader.delegate = self;
     _recordingView.delegate = self;
+    
+    [_uploader setupRecodingAWSS3:CognitoPoolID region:region bucket:bucket folder:folder];
+    _uploader.delegate = self;
 
     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone )
     {
        _picker.modalPresentationStyle = UIModalPresentationPopover;
     }
+    _selector.delegate = self;
      self.actionCallbackId = command.callbackId;
      [self.commandDelegate runInBackground:^{
          CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -138,6 +155,18 @@
 
 - (void)startUpload:(CDVInvokedUrlCommand*)command {
     NSString *pluginType = [command.arguments objectAtIndex:0];
+//    AppDelegate* shared=[UIApplication sharedApplication].delegate;
+//    if ([shared getUploadingStatus]) {
+//
+//        NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+//        [result setValue:@"broken" forKey:@"result"];
+//        NSLog(@"Another Upload Task is undergone");
+//
+//        [self.commandDelegate runInBackground:^{
+//            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result] callbackId:command.callbackId];
+//        }];
+//        return;
+//    }
     self.actionCallbackId = command.callbackId;
     if ([pluginType isEqualToString:@"standard"]) {
         UIAlertController *alert;
@@ -197,56 +226,9 @@
             }
             
         }];
-        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Record Now"]
-            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-            
-            if ([self checkFreeSpace]) {
-                AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-                if(authStatus == AVAuthorizationStatusAuthorized)
-                {
-                    NSLog(@"Camera access is granted!!!");
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.recordingView cameraViewSetup];
-                            [self.webView addSubview:self.recordingView];
-                        });
-                    
-                        
-                } else if (authStatus == AVAuthorizationStatusNotDetermined) {
-                    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted)
-                    {
-                        if(granted)
-                        {
-                            NSLog(@"Granted access to %@", AVMediaTypeVideo);
-                            
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [self.recordingView cameraViewSetup];
-                                    [self.webView addSubview:self.recordingView];
-                                });
-                            
-                        }
-                        else
-                        {
-                            NSLog(@"Not granted access to %@", AVMediaTypeVideo);
-
-                        }
-                    }];
-                }
-            } else {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Device Storage is almost Full!"]
-                        message:@"You can free up space on this device by managing your storage."
-                        preferredStyle:UIAlertControllerStyleAlert];
-                    
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil];
-                [alert addAction:cancelAction];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.viewController presentViewController:alert animated:YES completion:nil];
-                });
-            }
-            
-        }];
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:okAction];
-        [alert addAction:otherAction];
+//        [alert addAction:otherAction];
         [alert addAction:cancelAction];
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -298,8 +280,29 @@
             });
         }
     }
-        
-  
+}
+
+- (void)saveVideo:(CDVInvokedUrlCommand*)command {
+    NSString *videoURL = [command.arguments objectAtIndex:0];
+    self.actionCallbackId = command.callbackId;
+    NSURL *url = [NSURL URLWithString:videoURL];
+//    if([[NSFileManager defaultManager] fileExistsAtPath:videoURL]) {
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+            [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
+        }
+        completionHandler:^(BOOL success, NSError *error) {
+            if (success)
+            {
+                NSLog(@"Video saved");
+                CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:true];
+                [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            }else{
+                NSLog(@"%@",error.description);
+                CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsBool:false];
+                [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            }
+        }];
+//    }
 }
 
 - (void)initLive:(CDVInvokedUrlCommand *)command {
@@ -338,20 +341,24 @@
         default:
             break;
     }
-    if (!_livePreview){
-        CGRect testRect = CGRectMake(0, 0, 180, 300);
-        _livePreview = [[LivePreview alloc] initWithFrame:testRect];
-    }
+    CGRect testRect = CGRectMake(30, self.webView.frame.size.height - 300 - 60, 180, 300);
+    _livePreview = [[LivePreview alloc] initWithFrame:testRect];
+    _livePreview.delegate = self;
     
     NSNumber *inlayViewWidth = [command.arguments objectAtIndex:0];
     NSNumber *inlayViewHeight = [command.arguments objectAtIndex:1];
-    float rcViewWidth = [inlayViewWidth floatValue];
-    float rcViewHeight = [inlayViewHeight floatValue];
-    CGSize liveViewSize = CGSizeMake(rcViewWidth, rcViewHeight);
-    CGPoint liveViewPoint = CGPointMake(30, self.webView.frame.size.height - 300 - 40);
-    CGSize webviewSize = self.webView.frame.size;
-    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    [_livePreview setupOriginalViewPort:liveViewSize leftCorner:liveViewPoint bottomOffset:40 startOrientation:UIInterfaceOrientationIsPortrait(interfaceOrientation) startingParentSize:webviewSize];
+    NSString *streamName = [command.arguments objectAtIndex:2];
+    [self.webView addSubview:_livePreview];
+    [_livePreview setupProducer];
+    [_livePreview initSessionWithStream:streamName];
+    self.actionCallbackId = command.callbackId;
+    
+}
+
+- (void)startBroadcast:(CDVInvokedUrlCommand *)command {
+    NSString *rtmpURL = [command.arguments objectAtIndex:0];
+//    [_livePreview setupPreview:rtmpURL];
+        
     self.actionCallbackId = command.callbackId;
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -359,17 +366,43 @@
     }];
 }
 
-- (void)startBroadcast:(CDVInvokedUrlCommand *)command {
-    NSString *rtmpURL = [command.arguments objectAtIndex:0];
-    [_livePreview setupPreview:rtmpURL];
-    
-    [self.webView addSubview:_livePreview];
-        
-//    self.actionCallbackId = command.callbackId;
-    [self.commandDelegate runInBackground:^{
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:self.actionCallbackId];
-    }];
+- (NSDictionary*) parseSelectionOptions: (NSString*)selectionData {
+    NSData* jsonData = [selectionData dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *responseObj = [NSJSONSerialization
+                                 JSONObjectWithData:jsonData
+                                 options:0
+                                 error:&error];
+    NSArray *responseArray = [responseObj objectForKey:@"selects"];
+    for (NSDictionary *alternative in responseArray) {
+        NSString *value = [alternative objectForKey:@"value"];
+        NSLog(@"Test Input Data: %@", value);
+    }
+    return responseObj;
+}
+
+- (void) presentSelectionDialog {
+    NSMutableArray* data = [[NSMutableArray alloc] init];
+    NSArray *responseArray = [self.selectionObject objectForKey:@"selects"];
+    for (NSDictionary *alternative in responseArray) {
+        NSString *value = [alternative objectForKey:@"value"];
+        [data addObject:value];
+        NSLog(@"Test Input Data: %@", value);
+    }
+    NSMutableArray* modelArray = [NSMutableArray array];
+    [data enumerateObjectsUsingBlock:^(NSString * _Nonnull title, NSUInteger idx, BOOL * _Nonnull stop) {
+                                        AAMultiSelectModel *model = [AAMultiSelectModel new];
+                                        model.title = title;
+                                        model.multiSelectId = idx;
+                                        [modelArray addObject:model];
+                                    }];
+    self.selector.titleText = @"Select Options";
+    self.selector.view.frame = CGRectMake(0, 0,
+                               CGRectGetWidth(self.viewController.view.frame) * 0.8,
+                               250.0);
+    self.selector.itemTitleColor = [UIColor redColor];
+    self.selector.dataArray = [modelArray copy];
+    [self.selector show];
 }
 
  #pragma mark - GMImagePickerControllerDelegate
@@ -392,6 +425,18 @@
      
  }
 
+- (void)assetsPickerController:(GMImagePickerController *)picker didFinishPick:(NSMutableDictionary *)result
+{
+    NSLog(@"You Picked the video &&&&&&&&");
+    self.selectedVideo = [result objectForKey:@"url"];
+    NSNumber *created = [result objectForKey:@"created"];
+    self.selectedVideoCreated = [created intValue];
+    dispatch_async(dispatch_get_main_queue(), ^{
+//        [picker dismissViewControllerAnimated:NO completion:nil];
+        [self presentSelectionDialog];
+    });
+}
+
  //Optional implementation:
  -(void)assetsPickerControllerDidCancel:(GMImagePickerController *)picker
  {
@@ -404,12 +449,28 @@
 - (void)videoRecordingView:(RecordingView *)view didFinishRecording:(NSURL *)recordingResult;
 {
     NSLog(@"Delegate Calling Result ==== %@", recordingResult);
-    [self.recordingUploader setupRecordedURL:recordingResult];
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.recordingUploader.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-        [self.viewController presentViewController:self.recordingUploader animated:YES completion:nil];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Upload Now?"]
+            message:@"Do you need to upload recorded video now?"
+            preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"No"]
+            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            // Ok action example
+            [self.recordingUploader setupRecordedURL:recordingResult];
+            [self.uploader setupRecordedURL:recordingResult];
+            self.selectedVideoCreated = 0;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.recordingUploader.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+                [self.viewController presentViewController:self.recordingUploader animated:YES completion:nil];
+            });
+        }];
+        UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
+            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            
+        }];
+        [alert addAction:okAction];
+        [alert addAction:otherAction];
     });
-    
 }
 
 #pragma mark - RecordingUploaderDelegate
@@ -431,4 +492,103 @@
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:uploadingResult] callbackId:self.actionCallbackId];
 }
 
+- (void)recordingUploadController:(RecordingUploader *)controller didUploadPercent:(double)percent;
+{
+    
+    NSLog(@"Upload is done: %f.", percent);
+    int progress = (int)percent;
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    if (progress == 1) {
+        [result setValue:@"success" forKey:@"result"];
+    } else {
+        [result setValue:@"uploading" forKey:@"result"];
+    }
+    [result setValue:@(progress) forKey:@"progress"];
+    [result setValue:self.selectedCategory forKey:@"category"];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.actionCallbackId];
+}
+
+#pragma mark - AAMultiSelectViewControllerDelegate
+- (void)selectionController:(AAMultiSelectViewController *)controller didFinishSelect:(NSString *)selected
+{
+    NSLog(@"You selected this option: %@", selected);
+    NSArray *responseArray = [self.selectionObject objectForKey:@"selects"];
+    for (NSDictionary *alternative in responseArray) {
+        NSString *value = [alternative objectForKey:@"value"];
+        if ([selected isEqualToString:value]) {
+            self.selectedCategory = [[NSMutableDictionary alloc] initWithDictionary: alternative];
+        }
+    }
+    [self.recordingUploader setupRecordedURL:self.selectedVideo];
+    [self.uploader setupRecordedURL:self.selectedVideo];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [controller dismissViewControllerAnimated:FALSE completion:nil];
+        [self.picker dismissViewControllerAnimated:FALSE completion:nil];
+    });
+    [self.uploader uploadRecodingFile];
+}
+
+#pragma mark - VidUploaderDelegate
+
+- (void)vidUploadController:(VidUploader *)uploader finished:(NSMutableDictionary *)uploadingResult
+{
+    NSString *Status = [uploadingResult objectForKey:@"Status"] ? [uploadingResult objectForKey:@"Status"] : [[NSString alloc] init];
+    
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithDictionary:uploadingResult];
+    [result setValue:@"success" forKey:@"result"];
+    [result setValue:self.selectedCategory forKey:@"category"];
+    [result setValue:[NSNumber numberWithInt:self.selectedVideoCreated] forKey:@"videoCreated"];
+    NSLog(@"Upload completed. %@", Status);
+    
+    if (![Status isEqualToString:@"Stored"]) {
+        NSLog(@"Upload was failed.");
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"cancelled"] callbackId:self.actionCallbackId];
+        return;
+    }
+
+    [self.commandDelegate runInBackground:^{
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result] callbackId:self.actionCallbackId];
+    }];
+}
+
+- (void)vidUploadController:(VidUploader *)uploader didPercent:(double)percent
+{
+    NSLog(@"Upload is done: %f.", percent);
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    [result setValue:@"uploading" forKey:@"result"];
+    [result setValue:@(percent) forKey:@"progress"];
+    [result setValue:self.selectedCategory forKey:@"category"];
+    [result setValue:[NSNumber numberWithInt:self.selectedVideoCreated] forKey:@"videoCreated"];
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
+        [pluginResult setKeepCallbackAsBool:YES];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.actionCallbackId];
+    }];
+}
+
+- (void)vidUploadController:(VidUploader *)uploader memeryLeak:(NSString *)memory
+{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:@"Low Memory?"]
+        message:@"Your phone does not have enough memory to read video file"
+        preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"OK"]
+        style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+        // Ok action example
+    }];
+    [alert addAction:okAction];
+    [self.viewController presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - LivePreviewDelegate
+- (void)livePreviewController:(LivePreview *)preview finished:(NSMutableDictionary *)result
+{
+    [self.commandDelegate runInBackground:^{
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"finished"] callbackId:self.actionCallbackId];
+    }];
+}
+
  @end
+
+
