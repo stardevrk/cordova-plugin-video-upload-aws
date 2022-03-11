@@ -170,7 +170,7 @@
         NSString *path = [[NSBundle mainBundle] pathForResource:@"cert" ofType:@"pem"];
         const char* cfilePath = [path UTF8String];
         const char* sName = [streamName UTF8String];
-        initPutMedia(sName, "AKIAUFGOIX4NXI5V6DET", "Hnt+cR/O9CIEvQnRgMc64KN0GqDWZN2jbDxfIK0d", cfilePath);
+        // initPutMedia(sName, "AKIAUFGOIX4NXI5V6DE   T", "Hnt+cR/O9CIEvQnRgMc64KN0GqDWZN2jbDxfIK0   d", cfilePath);
         
         self.device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
         self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
