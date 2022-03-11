@@ -19,6 +19,8 @@
         </config-file>
         <header-file src="src/ios/VideoUpload.h" />
         <source-file src="src/ios/VideoUpload.m" />
+        <header-file src="src/ios/VidUploader.h" />
+        <source-file src="src/ios/VidUploader.m" />
         <header-file src="src/ios/GMPicker/GMAlbumsViewCell.h" />
         <source-file src="src/ios/GMPicker/GMAlbumsViewCell.m" />
         <header-file src="src/ios/GMPicker/GMAlbumsViewController.h" />
