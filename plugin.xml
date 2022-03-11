@@ -12,7 +12,6 @@
         </pods-config>
 
         <pod id="AWSS3" />
-        <pod name="LFLiveKit" git="https://github.com/stardevrk/LFLiveKit" />
         <config-file target="config.xml" parent="/*">
             <feature name="VideoUpload">
                 <param name="ios-package" value="VideoUpload"/>
@@ -36,8 +35,16 @@
         <source-file src="src/ios/GMPicker/RecordingView.m" />
         <header-file src="src/ios/GMPicker/RecordingUploader.h" />
         <source-file src="src/ios/GMPicker/RecordingUploader.m" />
-        <header-file src="src/ios/LivePreview.h" />
-        <source-file src="src/ios/LivePreview.m" />
+        <header-file src="src/ios/AASelector/AAMultiSelectController.h" />
+        <header-file src="src/ios/AASelector/AAMultiSelectModel.h" />
+        <source-file src="src/ios/AASelector/AAMultiSelectModel.m" />
+        <header-file src="src/ios/AASelector/AAMultiSelectTableViewCell.h" />
+        <source-file src="src/ios/AASelector/AAMultiSelectTableViewCell.m" />
+        <header-file src="src/ios/AASelector/AAMultiSelectViewController.h" />
+        <source-file src="src/ios/AASelector/AAMultiSelectViewController.m" />
+        <header-file src="src/ios/AASelector/AAPopupView.h" />
+        <source-file src="src/ios/AASelector/AAPopupView.m" />
+        <header-file src="src/ios/AASelector/AAPopupDefines.h" />
         <header-file src="src/ios/AppDelegate+VideoUpload.h" />
         <source-file src="src/ios/AppDelegate+VideoUpload.m" />
         <resource-file src="src/ios/GMPicker/GMEmptyFolder@1x.png" />

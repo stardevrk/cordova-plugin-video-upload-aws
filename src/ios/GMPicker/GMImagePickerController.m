@@ -10,6 +10,9 @@
 #import "GMImagePickerController.h"
 #import "GMAlbumsViewController.h"
 #import "ProgressViewController.h"
+#import "AAMultiSelectViewController.h"
+#import "AAPopupView.h"
+#import "AAMultiSelectModel.h"
 #import <AWSS3/AWSS3.h>
 
 @import Photos;
@@ -18,12 +21,14 @@
 
 @property (strong) ProgressViewController *progressController;
 @property (strong) GMAlbumsViewController *albumsController;
+@property (nonatomic, strong) AAMultiSelectViewController *selectVC;
 
 @property (strong) NSURL *toBeUploaded;
 @property (strong) NSMutableDictionary *uploadResult;
 
 @property (strong) NSString *bucket;
 @property (strong) NSString *folder;
+@property (nonatomic, strong) NSArray *dataArray;
 
 @end
 
@@ -367,41 +372,49 @@
     
     if (!self.allowsMultipleSelection) {
         if (self.confirmSingleSelection) {
-            NSString *message = self.confirmSingleSelectionPrompt ? self.confirmSingleSelectionPrompt : [NSString stringWithFormat:@""];
-            
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Upload Video?"]
-                message:message
-                preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"No"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Ok action example
-            }];
-            UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Other action
-                PHAsset *firstAsset = [self.selectedAssets objectAtIndex:0];
-                if (firstAsset.mediaType == PHAssetMediaTypeVideo) {
-                    [[PHImageManager defaultManager] requestAVAssetForVideo:firstAsset options:nil resultHandler:^(AVAsset *asset, AVAudioMix *audioMix, NSDictionary *info)
+            // Other action
+            PHAsset *firstAsset = [self.selectedAssets objectAtIndex:0];
+            if (firstAsset.mediaType == PHAssetMediaTypeVideo) {
+                [[PHImageManager defaultManager] requestAVAssetForVideo:firstAsset options:nil resultHandler:^(AVAsset *asset, AVAudioMix *audioMix, NSDictionary *info)
+                {
+                    if ([asset isKindOfClass:[AVURLAsset class]])
                     {
-                        if ([asset isKindOfClass:[AVURLAsset class]])
-                        {
+                        NSInteger videoDuration = CMTimeGetSeconds(asset.duration);
+                        if (videoDuration > 300) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Error!"]
+                                    message:@"Error: this video is longer than 5 minutes. Please shorten the clip to 2 videos both less than 5 minutes and try upload again!"
+                                    preferredStyle:UIAlertControllerStyleAlert];
+                                UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
+                                    style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+                                    // Ok action example
+                                }];
+                                [alert addAction:okAction];
+                                [self presentViewController:alert animated:YES completion:nil];
+                            });
+                        } else {
                             NSURL *url = [(AVURLAsset*)asset URL];
                              // do what you want with it
-
-                            self.toBeUploaded = [(AVURLAsset*)asset URL];
-                            dispatch_async(dispatch_get_main_queue(), ^(void){
-                                 [self uploadSelectedFile];
-                            });
+                            NSDate *creationDate = (NSDate *)asset.creationDate.value;
+                            NSLog(@"Recording Date ==== %f",[creationDate timeIntervalSince1970]);
                             
+                            self.toBeUploaded = [(AVURLAsset*)asset URL];
+                            NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+                            [result setValue:self.toBeUploaded forKey: @"url"];
+                            NSNumber *time = [NSNumber numberWithInt:(int)[creationDate timeIntervalSince1970]];
+                            [result setValue:time forKey:@"created"];
+                            if ([self.delegate respondsToSelector:@selector(assetsPickerController:didFinishPick:)]) {
+                                [self.delegate assetsPickerController:self didFinishPick:result ];
+                            }
                             NSString *path=[NSString stringWithFormat:@"%@",url];
                             NSLog(@"GMImagePicker: User ended picking assets. Video Path is: %@", path);
                         }
-                    }];
-                }
-            }];
-            [alert addAction:okAction];
-            [alert addAction:otherAction];
-            [self presentViewController:alert animated:YES completion:nil];
+                    }
+                    else {
+                        NSLog(@"Your video is not correct. Please check location access for the video");
+                    }
+                }];
+            }
         } else {
 //            [self finishPickingAssets:self];
             

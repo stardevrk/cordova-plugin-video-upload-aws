@@ -8,6 +8,7 @@
 #import "AppDelegate+VideoUpload.h"
 
 #define BLOCK_ROTATION_KEY @"BLOCK_ROTATION"
+#define UPLOADING_STATUS_KEY @"UPLOADING_STATUS"
 
 @implementation AppDelegate (VideoUpload)
 
@@ -20,6 +21,17 @@
 - (BOOL)getBlockRotation {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     return [userDefaults boolForKey:BLOCK_ROTATION_KEY];
+}
+
+- (void) saveUploadingStatus: (BOOL)uploading {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:uploading forKey:UPLOADING_STATUS_KEY];
+    [userDefaults synchronize];
+}
+
+- (BOOL) getUploadingStatus {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    return [userDefaults boolForKey:UPLOADING_STATUS_KEY];
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window

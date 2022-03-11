@@ -608,7 +608,6 @@ didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
                         });
                         
                         if ([self.delegate respondsToSelector:@selector(videoRecordingView:didFinishRecording:)]) {
-                            NSLog(@"Delegate Called = ****");
                             [self.delegate videoRecordingView:self didFinishRecording:outputFileURL];
                         }
                     }

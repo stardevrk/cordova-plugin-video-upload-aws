@@ -43,29 +43,27 @@
     _progressController.parentView = self.view;
     _progressController.parentWidth = self.view.frame.size.width;
     _progressController.parentHeight = self.view.frame.size.height;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Upload Now?"]
-                message:@"Do you need to upload recorded video now?"
-                preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"No"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Ok action example
-                [self dismissViewControllerAnimated:YES completion:nil];
-                
-            }];
-            UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
-                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                // Other action
-//                [self.progressController formatCurrentValue:0];
-//                [self.progressController setProgress:[[NSNumber alloc] initWithFloat:0.0]];
-                [self uploadRecodingFile];
-    
-            }];
-            [alert addAction:okAction];
-            [alert addAction:otherAction];
-            [self presentViewController:alert animated:YES completion:nil];
-            
-        });
+    [self uploadRecodingFile];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Upload Now?"]
+//                message:@"Do you need to upload recorded video now?"
+//                preferredStyle:UIAlertControllerStyleAlert];
+//            UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"No"]
+//                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+//                // Ok action example
+//                [self dismissViewControllerAnimated:YES completion:nil];
+//                
+//            }];
+//            UIAlertAction *otherAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
+//                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+//                
+//    
+//            }];
+//            [alert addAction:okAction];
+//            [alert addAction:otherAction];
+//            [self presentViewController:alert animated:YES completion:nil];
+//            
+//        });
 }
 
 
@@ -159,78 +157,69 @@
             [self presentViewController:alert animated:YES completion:nil];
             return;
         }
+            
+        NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        NSMutableString *randomString = [NSMutableString stringWithCapacity: 8];
+
+        for (int i=0; i<8; i++) {
+             [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform([letters length])]];
+        }
         
+        NSTimeInterval  today = [[NSDate date] timeIntervalSince1970];
+        NSInteger time = today;
+        NSString *ts = [NSString stringWithFormat:@"%ld", (long)time];
         
-        self.progressController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-        [self presentViewController:self.progressController animated:YES completion:nil];
+        NSString *fileName = [self.recordingToBeUploaded lastPathComponent];
+        NSString *finalPath = [[NSString alloc] initWithFormat:@"%@%@-%@-%@", self.recordingFolder, randomString, ts, fileName];
         
-            
-            NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            NSMutableString *randomString = [NSMutableString stringWithCapacity: 8];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
-            for (int i=0; i<8; i++) {
-                 [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform([letters length])]];
-            }
-            
-            NSTimeInterval  today = [[NSDate date] timeIntervalSince1970];
-            NSInteger time = today;
-            NSString *ts = [NSString stringWithFormat:@"%ld", (long)time];
-            
-            NSString *fileName = [self.recordingToBeUploaded lastPathComponent];
-            NSString *finalPath = [[NSString alloc] initWithFormat:@"%@%@-%@-%@", self.recordingFolder, randomString, ts, fileName];
-            
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-                AWSS3TransferUtilityUploadExpression *expression = [AWSS3TransferUtilityUploadExpression new];
-                [expression setValue:@"public-read" forRequestHeader:@"x-amz-acl"];
-                expression.progressBlock = ^(AWSS3TransferUtilityTask *task, NSProgress *progress) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        //Do something with progress
-                        NSLog(@"Progress: %@", progress);
-                        [self.progressController setProgress:[[NSNumber alloc] initWithDouble:progress.fractionCompleted]];
-                    });
-                };
-
-                AWSS3TransferUtilityUploadCompletionHandlerBlock completionHandler = ^(AWSS3TransferUtilityUploadTask *task, NSError *error) {
-
-                    if ([task.response statusCode] == 200) {
-                        [self.recordingUploadResult setObject:@"Stored" forKey:@"Status"];
-                    } else {
-                        [self.recordingUploadResult setObject:@"Failed" forKey:@"Status"];
+            AWSS3TransferUtilityUploadExpression *expression = [AWSS3TransferUtilityUploadExpression new];
+            [expression setValue:@"public-read" forRequestHeader:@"x-amz-acl"];
+            expression.progressBlock = ^(AWSS3TransferUtilityTask *task, NSProgress *progress) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    //Do something with progress
+                    NSLog(@"Progress: %@", progress);
+//                        [self.progressController setProgress:[[NSNumber alloc] initWithDouble:progress.fractionCompleted]];
+                    if ([self.delegate respondsToSelector:@selector(recordingUploadController:didUploadPercent:)]) {
+                        [self.delegate recordingUploadController:self didUploadPercent:progress.fractionCompleted];
                     }
+                });
+            };
 
-                    
-                        // Do something e.g. Alert a user for transfer completion.
-                        // On failed uploads, `error` contains the error object.
-                        
-                        if (error != nil) {
-                            NSLog(@"Finished: Error = %@", error);
-                            [self.recordingUploadResult setObject:error forKey:@"Error"];
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.progressController dismissViewControllerAnimated:YES completion:nil];
-                                [self dismissViewControllerAnimated:YES completion:nil];
-                            });
-                        } else {
-                            NSLog(@"Finished: Response = %@", task.response);
-                            NSURL *uploadURL = [task.response URL];
-                            NSString *uploadPath = [[uploadURL.absoluteString componentsSeparatedByString:@"?"] objectAtIndex:0];
-                            [self.recordingUploadResult setObject:uploadPath forKey:@"Location"];
-                            [self.recordingUploadResult setObject:[[NSNumber alloc] initWithInt:1] forKey:@"Recording"];
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.progressController dismissViewControllerAnimated:YES completion:nil];
-                                [self dismissViewControllerAnimated:YES completion:nil];
-                            });
-                            [self finishUploadingRecordFile:self];
-                            
-//                            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:self.recordingUploadResult] callbackId:self.actionCallbackId];
-                        }
-                    
-                };
+            AWSS3TransferUtilityUploadCompletionHandlerBlock completionHandler = ^(AWSS3TransferUtilityUploadTask *task, NSError *error) {
 
-                AWSS3TransferUtility *transferUtility = [AWSS3TransferUtility defaultS3TransferUtility];
-                [transferUtility uploadData:uploadData bucket:self.recordingBucket key:finalPath contentType:@"video/quicktime" expression:expression completionHandler:completionHandler];
-            });
-            
+                if ([task.response statusCode] == 200) {
+                    [self.recordingUploadResult setObject:@"Stored" forKey:@"Status"];
+                } else {
+                    [self.recordingUploadResult setObject:@"Failed" forKey:@"Status"];
+                }
+                    
+                if (error != nil) {
+                    NSLog(@"Finished: Error = %@", error);
+                    [self.recordingUploadResult setObject:error forKey:@"Error"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.progressController dismissViewControllerAnimated:YES completion:nil];
+                        [self dismissViewControllerAnimated:YES completion:nil];
+                    });
+                } else {
+                    NSLog(@"Finished: Response = %@", task.response);
+                    NSURL *uploadURL = [task.response URL];
+                    NSString *uploadPath = [[uploadURL.absoluteString componentsSeparatedByString:@"?"] objectAtIndex:0];
+                    [self.recordingUploadResult setObject:uploadPath forKey:@"Location"];
+                    [self.recordingUploadResult setObject:[[NSNumber alloc] initWithInt:1] forKey:@"Recording"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.progressController dismissViewControllerAnimated:YES completion:nil];
+                        [self dismissViewControllerAnimated:YES completion:nil];
+                    });
+                    [self finishUploadingRecordFile:self];
+                }
+            };
+
+            AWSS3TransferUtility *transferUtility = [AWSS3TransferUtility defaultS3TransferUtility];
+            [transferUtility uploadData:uploadData bucket:self.recordingBucket key:finalPath contentType:@"video/quicktime" expression:expression completionHandler:completionHandler];
+        });
+        
             
         }
 }
