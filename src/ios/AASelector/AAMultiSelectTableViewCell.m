@@ -1,6 +1,6 @@
 
 #import "AAMultiSelectTableViewCell.h"
-#import "Masonry/Masonry.h"
+#import "Masonry.h"
 
 #define AAImage(fileName)   [UIImage imageNamed:[@"AAMultiSelectController.bundle" stringByAppendingPathComponent:fileName]] ? : [UIImage imageNamed:[@"Frameworks/AAMultiSelectController.framework/AAMultiSelectController.bundle" stringByAppendingPathComponent:fileName]]
 

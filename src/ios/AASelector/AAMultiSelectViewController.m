@@ -1,7 +1,7 @@
 
 #import "AAMultiSelectViewController.h"
 #import "AAPopupView.h"
-#import "Masonry/Masonry.h"
+#import "Masonry.h"
 #import "AAMultiSelectTableViewCell.h"
 #import "AAMultiSelectModel.h"
 
