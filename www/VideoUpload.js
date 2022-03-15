@@ -14,6 +14,13 @@ function parseOptions(args) {
     a.push(args.folder || null);
     a.push(args.cameraWidth || 0);
     a.push(args.cameraHeight || 0);
+    const testData = { selects: [
+        {id: 0, value: 'Hitter and Pitcher'},
+        {id: 10, value: 'Pitcher Only'},
+        {id: 20, value: 'Hitter Only'}
+        ]
+    }
+    a.push(JSON.stringify(testData))
     return a;
 } 
 
@@ -21,6 +28,7 @@ function parseLiveOptions(args) {
     var a = [];
     a.push(args.cameraWidth || 0);
     a.push(args.cameraHeight || 0);
+    a.push(args.stream || '');
     return a;
 }
     
@@ -28,13 +36,21 @@ var VideoUpload = {
     init:function(options) {
         exec(function() {}, function() {}, 'VideoUpload', 'init', parseOptions(options));
     },
-    startUpload:function(pluginType, successCB, errorCB) {
-        exec(successCB, errorCB, 'VideoUpload', 'startUpload', [pluginType]);
+    startUpload:function(pluginType, progressListener, successCB, errorCB) {
+        var win = function(result) {
+            if (progressListener)
+                progressListener(result);
+            successCB(result);
+        }
+        exec(win, errorCB, 'VideoUpload', 'startUpload', [pluginType]);
     },
-    initLive:function(options) {
-        exec(function() {}, function() {}, 'VideoUpload', 'initLive', parseLiveOptions(options));
+    saveVideo:function(url, successCB, errorCB) {
+        exec(successCB, errorCB, 'VideoUpload', 'saveVideo', [url]);
     },
-    startBroadcast:function(rtmpURL) {
+    initLive:function(options, successCB, errorCB) {
+        exec(successCB, errorCB, 'VideoUpload', 'initLive', parseLiveOptions(options));
+    },
+    startBroadcast:function() {
         exec(function() {}, function() {}, 'VideoUpload', 'startBroadcast', [rtmpURL]);
     },
     addWatcher: function(successCB, errorCB) {
@@ -45,8 +61,8 @@ var VideoUpload = {
     }
 };
 
-channel.createSticky('onCordovaConnectionReady');
-channel.waitForInitialization('onCordovaConnectionReady');
+// channel.createSticky('onCordovaConnectionReady');
+// channel.waitForInitialization('onCordovaConnectionReady');
 var vuTimerId = null;
 var vuTimeout = 500;
 
