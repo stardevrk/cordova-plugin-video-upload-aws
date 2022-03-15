@@ -65,7 +65,6 @@
         <header-file src="src/ios/AASelector/Masonry/MASViewConstraint.h" />
         <source-file src="src/ios/AASelector/Masonry/NSArray+MASAdditions.m" />
         <header-file src="src/ios/AASelector/Masonry/NSArray+MASAdditions.h" />
-        <source-file src="src/ios/AASelector/Masonry/NSArray+MASShorthandAdditions.m" />
         <header-file src="src/ios/AASelector/Masonry/NSArray+MASShorthandAdditions.h" />
         <source-file src="src/ios/AASelector/Masonry/NSLayoutConstraint+MASDebugAdditions.m" />
         <header-file src="src/ios/AASelector/Masonry/NSLayoutConstraint+MASDebugAdditions.h" />
