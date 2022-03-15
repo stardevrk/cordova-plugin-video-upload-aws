@@ -47,6 +47,34 @@
         <header-file src="src/ios/AASelector/AAPopupView.h" />
         <source-file src="src/ios/AASelector/AAPopupView.m" />
         <header-file src="src/ios/AASelector/AAPopupDefines.h" />
+        
+        <source-file src="src/ios/AASelector/Masonry/MASCompositeConstraint.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASCompositeConstraint.h" />
+        <source-file src="src/ios/AASelector/Masonry/MASConstraint.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASConstraint.h" />
+        <header-file src="src/ios/AASelector/Masonry/MASConstraint+Private.h" />
+        <source-file src="src/ios/AASelector/Masonry/MASConstraintMaker.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASConstraintMaker.h" />
+        <source-file src="src/ios/AASelector/Masonry/MASLayoutConstraint.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASLayoutConstraint.h" />
+        <header-file src="src/ios/AASelector/Masonry/Masonry.h" />
+        <header-file src="src/ios/AASelector/Masonry/MASUtilities.h" />
+        <source-file src="src/ios/AASelector/Masonry/MASViewAttribute.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASViewAttribute.h" />
+        <source-file src="src/ios/AASelector/Masonry/MASViewConstraint.m" />
+        <header-file src="src/ios/AASelector/Masonry/MASViewConstraint.h" />
+        <source-file src="src/ios/AASelector/Masonry/NSArray+MASAdditions.m" />
+        <header-file src="src/ios/AASelector/Masonry/NSArray+MASAdditions.h" />
+        <source-file src="src/ios/AASelector/Masonry/NSArray+MASShorthandAdditions.m" />
+        <header-file src="src/ios/AASelector/Masonry/NSArray+MASShorthandAdditions.h" />
+        <source-file src="src/ios/AASelector/Masonry/NSLayoutConstraint+MASDebugAdditions.m" />
+        <header-file src="src/ios/AASelector/Masonry/NSLayoutConstraint+MASDebugAdditions.h" />
+        <source-file src="src/ios/AASelector/Masonry/View+MASAdditions.m" />
+        <header-file src="src/ios/AASelector/Masonry/View+MASAdditions.h" />
+        <header-file src="src/ios/AASelector/Masonry/View+MASShorthandAdditions.h" />
+        <source-file src="src/ios/AASelector/Masonry/ViewController+MASAdditions.m" />
+        <header-file src="src/ios/AASelector/Masonry/ViewController+MASAdditions.h" />
+
         <header-file src="src/ios/AppDelegate+VideoUpload.h" />
         <source-file src="src/ios/AppDelegate+VideoUpload.m" />
         <resource-file src="src/ios/GMPicker/GMEmptyFolder@1x.png" />
