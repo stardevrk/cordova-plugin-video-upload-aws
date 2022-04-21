@@ -17,9 +17,6 @@
     if (!_recordingUploader){
         _recordingUploader = [[RecordingUploader alloc] init];
     }
-    if (!_selector) {
-        _selector = [[AAMultiSelectViewController alloc] init];
-    }
     if (!_uploader) {
         _uploader = [[VidUploader alloc] init];
     }
@@ -29,8 +26,6 @@
     NSString *folder = [command.arguments objectAtIndex:3];
     NSNumber *inlayViewWidth = [command.arguments objectAtIndex:4];
     NSNumber *inlayViewHeight = [command.arguments objectAtIndex:5];
-    NSString *selectionData = [command.arguments objectAtIndex:6];
-    _selectionObject = [self parseSelectionOptions:selectionData];
 //    NSArray *arr = [selectionData componentsSeparatedByString:@","];
 //    NSString *strSecond = [arr objectAtIndex:1];
     
@@ -66,7 +61,6 @@
     {
        _picker.modalPresentationStyle = UIModalPresentationPopover;
     }
-    _selector.delegate = self;
      self.actionCallbackId = command.callbackId;
      [self.commandDelegate runInBackground:^{
          CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -381,30 +375,6 @@
     return responseObj;
 }
 
-- (void) presentSelectionDialog {
-    NSMutableArray* data = [[NSMutableArray alloc] init];
-    NSArray *responseArray = [self.selectionObject objectForKey:@"selects"];
-    for (NSDictionary *alternative in responseArray) {
-        NSString *value = [alternative objectForKey:@"value"];
-        [data addObject:value];
-        NSLog(@"Test Input Data: %@", value);
-    }
-    NSMutableArray* modelArray = [NSMutableArray array];
-    [data enumerateObjectsUsingBlock:^(NSString * _Nonnull title, NSUInteger idx, BOOL * _Nonnull stop) {
-                                        AAMultiSelectModel *model = [AAMultiSelectModel new];
-                                        model.title = title;
-                                        model.multiSelectId = idx;
-                                        [modelArray addObject:model];
-                                    }];
-    self.selector.titleText = @"Select Options";
-    self.selector.view.frame = CGRectMake(0, 0,
-                               CGRectGetWidth(self.viewController.view.frame) * 0.8,
-                               250.0);
-    self.selector.itemTitleColor = [UIColor redColor];
-    self.selector.dataArray = [modelArray copy];
-    [self.selector show];
-}
-
  #pragma mark - GMImagePickerControllerDelegate
 
  - (void)assetsPickerController:(GMImagePickerController *)picker didFinishUpload:(NSMutableDictionary *)result
@@ -432,9 +402,11 @@
     NSNumber *created = [result objectForKey:@"created"];
     self.selectedVideoCreated = [created intValue];
     dispatch_async(dispatch_get_main_queue(), ^{
-//        [picker dismissViewControllerAnimated:NO completion:nil];
-        [self presentSelectionDialog];
+        [picker dismissViewControllerAnimated:NO completion:nil];
+//        [self presentSelectionDialog];
     });
+    [self.uploader setupRecordedURL:self.selectedVideo];
+    [self.uploader uploadRecodingFile];
 }
 
  //Optional implementation:
@@ -508,26 +480,6 @@
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:result];
     [pluginResult setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.actionCallbackId];
-}
-
-#pragma mark - AAMultiSelectViewControllerDelegate
-- (void)selectionController:(AAMultiSelectViewController *)controller didFinishSelect:(NSString *)selected
-{
-    NSLog(@"You selected this option: %@", selected);
-    NSArray *responseArray = [self.selectionObject objectForKey:@"selects"];
-    for (NSDictionary *alternative in responseArray) {
-        NSString *value = [alternative objectForKey:@"value"];
-        if ([selected isEqualToString:value]) {
-            self.selectedCategory = [[NSMutableDictionary alloc] initWithDictionary: alternative];
-        }
-    }
-    [self.recordingUploader setupRecordedURL:self.selectedVideo];
-    [self.uploader setupRecordedURL:self.selectedVideo];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [controller dismissViewControllerAnimated:FALSE completion:nil];
-        [self.picker dismissViewControllerAnimated:FALSE completion:nil];
-    });
-    [self.uploader uploadRecodingFile];
 }
 
 #pragma mark - VidUploaderDelegate

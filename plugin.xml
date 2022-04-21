@@ -37,7 +37,7 @@
         <source-file src="src/ios/GMPicker/RecordingView.m" />
         <header-file src="src/ios/GMPicker/RecordingUploader.h" />
         <source-file src="src/ios/GMPicker/RecordingUploader.m" />
-        <header-file src="src/ios/AASelector/AAMultiSelectController.h" />
+        <!-- <header-file src="src/ios/AASelector/AAMultiSelectController.h" />
         <header-file src="src/ios/AASelector/AAMultiSelectModel.h" />
         <source-file src="src/ios/AASelector/AAMultiSelectModel.m" />
         <header-file src="src/ios/AASelector/AAMultiSelectTableViewCell.h" />
@@ -72,7 +72,7 @@
         <header-file src="src/ios/AASelector/Masonry/View+MASAdditions.h" />
         <header-file src="src/ios/AASelector/Masonry/View+MASShorthandAdditions.h" />
         <source-file src="src/ios/AASelector/Masonry/ViewController+MASAdditions.m" />
-        <header-file src="src/ios/AASelector/Masonry/ViewController+MASAdditions.h" />
+        <header-file src="src/ios/AASelector/Masonry/ViewController+MASAdditions.h" /> -->
 
         <header-file src="src/ios/AppDelegate+VideoUpload.h" />
         <source-file src="src/ios/AppDelegate+VideoUpload.m" />

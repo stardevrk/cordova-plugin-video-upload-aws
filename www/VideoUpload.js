@@ -14,12 +14,6 @@ function parseOptions(args) {
     a.push(args.folder || null);
     a.push(args.cameraWidth || 0);
     a.push(args.cameraHeight || 0);
-    const testData = { selects: [
-        {id: 0, value: 'Hitter and Pitcher'},
-        {id: 10, value: 'Pitcher Only'},
-        {id: 20, value: 'Hitter Only'}
-        ]
-    }
     a.push(JSON.stringify(testData))
     return a;
 } 

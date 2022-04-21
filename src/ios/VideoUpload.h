@@ -4,11 +4,9 @@
 #import "GMImagePickerController.h"
 #import "RecordingView.h"
 #import "RecordingUploader.h"
-#import "AAMultiSelectViewController.h"
-#import "AAMultiSelectModel.h"
 #import "VidUploader.h"
 
-@interface VideoUpload : CDVPlugin <GMImagePickerControllerDelegate, RecordingUploaderDelegate, RecordingViewDelegate, AAMultiSelectViewControllerDelegate, VidUploaderDelegate>
+@interface VideoUpload : CDVPlugin <GMImagePickerControllerDelegate, RecordingUploaderDelegate, RecordingViewDelegate, VidUploaderDelegate>
 
 @property(nonatomic, copy) NSString* actionCallbackId;
 @property(nonatomic, copy) NSString* watcherCallbackId;
@@ -22,7 +20,6 @@
 @property(nonatomic, copy) GMImagePickerController* picker;
 @property(nonatomic, copy) RecordingView* recordingView;
 @property(nonatomic, copy) RecordingUploader *recordingUploader;
-@property(nonatomic, copy) AAMultiSelectViewController* selector;
 @property(nonatomic, copy) VidUploader* uploader;
 
 - (void)init:(CDVInvokedUrlCommand*)command;
