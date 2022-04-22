@@ -14,7 +14,6 @@ function parseOptions(args) {
     a.push(args.folder || null);
     a.push(args.cameraWidth || 0);
     a.push(args.cameraHeight || 0);
-    a.push(JSON.stringify(testData))
     return a;
 } 
 
