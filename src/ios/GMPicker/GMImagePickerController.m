@@ -10,9 +10,6 @@
 #import "GMImagePickerController.h"
 #import "GMAlbumsViewController.h"
 #import "ProgressViewController.h"
-#import "AAMultiSelectViewController.h"
-#import "AAPopupView.h"
-#import "AAMultiSelectModel.h"
 #import <AWSS3/AWSS3.h>
 
 @import Photos;
@@ -21,7 +18,6 @@
 
 @property (strong) ProgressViewController *progressController;
 @property (strong) GMAlbumsViewController *albumsController;
-@property (nonatomic, strong) AAMultiSelectViewController *selectVC;
 
 @property (strong) NSURL *toBeUploaded;
 @property (strong) NSMutableDictionary *uploadResult;
