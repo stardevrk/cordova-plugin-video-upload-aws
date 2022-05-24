@@ -375,36 +375,21 @@
                 {
                     if ([asset isKindOfClass:[AVURLAsset class]])
                     {
-                        NSInteger videoDuration = CMTimeGetSeconds(asset.duration);
-                        if (videoDuration > 300) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat: @"Error!"]
-                                    message:@"Error: this video is longer than 5 minutes. Please shorten the clip to 2 videos both less than 5 minutes and try upload again!"
-                                    preferredStyle:UIAlertControllerStyleAlert];
-                                UIAlertAction *okAction = [UIAlertAction actionWithTitle:[NSString stringWithFormat:@"Yes"]
-                                    style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                                    // Ok action example
-                                }];
-                                [alert addAction:okAction];
-                                [self presentViewController:alert animated:YES completion:nil];
-                            });
-                        } else {
-                            NSURL *url = [(AVURLAsset*)asset URL];
-                             // do what you want with it
-                            NSDate *creationDate = (NSDate *)asset.creationDate.value;
-                            NSLog(@"Recording Date ==== %f",[creationDate timeIntervalSince1970]);
-                            
-                            self.toBeUploaded = [(AVURLAsset*)asset URL];
-                            NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
-                            [result setValue:self.toBeUploaded forKey: @"url"];
-                            NSNumber *time = [NSNumber numberWithInt:(int)[creationDate timeIntervalSince1970]];
-                            [result setValue:time forKey:@"created"];
-                            if ([self.delegate respondsToSelector:@selector(assetsPickerController:didFinishPick:)]) {
-                                [self.delegate assetsPickerController:self didFinishPick:result ];
-                            }
-                            NSString *path=[NSString stringWithFormat:@"%@",url];
-                            NSLog(@"GMImagePicker: User ended picking assets. Video Path is: %@", path);
+                        NSURL *url = [(AVURLAsset*)asset URL];
+                         // do what you want with it
+                        NSDate *creationDate = (NSDate *)asset.creationDate.value;
+                        NSLog(@"Recording Date ==== %f",[creationDate timeIntervalSince1970]);
+                        
+                        self.toBeUploaded = [(AVURLAsset*)asset URL];
+                        NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+                        [result setValue:self.toBeUploaded forKey: @"url"];
+                        NSNumber *time = [NSNumber numberWithInt:(int)[creationDate timeIntervalSince1970]];
+                        [result setValue:time forKey:@"created"];
+                        if ([self.delegate respondsToSelector:@selector(assetsPickerController:didFinishPick:)]) {
+                            [self.delegate assetsPickerController:self didFinishPick:result ];
                         }
+                        NSString *path=[NSString stringWithFormat:@"%@",url];
+                        NSLog(@"GMImagePicker: User ended picking assets. Video Path is: %@", path);
                     }
                     else {
                         NSLog(@"Your video is not correct. Please check location access for the video");
